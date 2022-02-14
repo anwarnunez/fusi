@@ -1,9 +1,4 @@
-==========================
- Nunez-Elizalde et al 2022
-==========================
-
 https://github.com/anwarnunez/fusi
-
 
 This repository contains the code related to the article:
 
