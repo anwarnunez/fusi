@@ -23,8 +23,8 @@ Some general DOCs
    :caption: API Reference
    :maxdepth: 2
 
-   autodoc/repo_template
+   autodoc/fusi
 
 
-.. autosummary:: repo_template
+.. autosummary:: fusi
    :toctree: modules

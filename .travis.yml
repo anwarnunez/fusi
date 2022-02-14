@@ -1,6 +1,5 @@
 language: python
 python:
-  - "3.6"
   - "3.7"
   - "3.8"
 
@@ -30,7 +29,7 @@ after_success:
 after_success:
   - pip install -q Sphinx sphinx-gallery numpydoc sphinx-bootstrap-theme sphinx-rtd-theme
   - cd gendoc
-  - sphinx-apidoc -o source/autodoc ../repo_template -e
+  - sphinx-apidoc -o source/autodoc ../fusi -e
   - sphinx-autogen source/index.rst
   - make html && cd ..
   - touch gendoc/build/html/.nojekyll

@@ -19,8 +19,8 @@ import numpydoc
 
 # -- Project information -----------------------------------------------------
 
-project = 'repo_template'
-copyright = '2020, Anwar Nunez-Elizalde'
+project = 'fusi'
+copyright = '2022, Anwar Nunez-Elizalde'
 author = 'Anwar Nunez-Elizalde'
 
 # The full version, including alpha/beta/rc tags
@@ -92,7 +92,7 @@ if use_bootstrap:
                           'globaltoc_depth': 2,
                           'navbar_links': [
                               # ("Examples", "examples"),
-                              ("GitHub Repo", "https://github.com/anwarnunez/repo_template/", True),
+                              ("GitHub Repo", "https://github.com/anwarnunez/fusi/", True),
                           ],
                           }
 else:

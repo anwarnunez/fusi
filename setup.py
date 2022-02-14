@@ -42,15 +42,15 @@ long_description = """
 """
 
 def main(**kwargs):
-    setup(name='repo_template',
+    setup(name='fusi',
           version='0.0.0',
           description="""""",
           author='Anwar O. Nunez-Elizalde',
           author_email='anwarnunez@gmail.com',
-          url='https://anwarnunez.github.io/repo_template/',
-          packages=['repo_template'],
+          url='https://anwarnunez.github.io/fusi/',
+          packages=['fusi'],
           package_data={
-              'repo_template' :[
+              'fusi' :[
                   'defaults.cfg',
               ],
           },
