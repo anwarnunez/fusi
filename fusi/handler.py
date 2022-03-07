@@ -804,7 +804,8 @@ class SimultaneousfUSiNeuropixels(object):
     def load_eye_video_buffer(self):
         '''
         '''
-        pattern = '/cortexlab/zserver/Data/Subjects/{subject}/{year}-{month}-{day}/{session_oneidx}'
+        from fusi.config import DATA_ROOT
+        pattern = DATA_ROOT + '/{subject}/{year}-{month}-{day}/{session_oneidx}'
         root = pattern.format(subject=self.subject_name,
                               year=self.dateob.year,
                               month='%02i' % self.dateob.month,
@@ -822,10 +823,13 @@ class SimultaneousfUSiNeuropixels(object):
         from moten.io import video_buffer
         return video_buffer(flname)
 
-    def load_eyetracking(self):
+    def load_eyetracking(self, root=None):
         '''
         '''
-        pattern = '/cortexlab/zserver/Data/Subjects/{subject}/{year}-{month}-{day}/{session_oneidx}'
+        if root is None:
+            from fusi.config import DATA_ROOT
+            root = DATA_ROOT
+        pattern = root + '/{subject}/{year}-{month}-{day}/{session_oneidx}'
         root = pattern.format(subject=self.subject_name,
                               year=self.dateob.year,
                               month='%02i' % self.dateob.month,
@@ -1135,164 +1139,12 @@ class MatlabHDF(object):
             print('"%s" is a dataset' % path, hdf_content.shape)
 
 
-def get_sessions(subject, year, month, day, root='/cortexlab/zubjects/Subjects/', matcher='*'):
+def get_sessions(subject, year, month, day, root=None, matcher='*'):
+    if root is None:
+        from fusi.config import DATA_ROOT
+        root = DATA_ROOT
     date = '{}-{}-{}'.format(year, month, day)
     path = os.path.join(root, subject, date)
     sessions = glob(os.path.join(path, matcher))
     return sessions
 
-
-class MultiWorldFUSI(object):
-    def __init__(self, subject_name, date=None, sessidx=None, verbose=False):
-        '''
-        '''
-        fusi_pattern = '/cortexlab/zserver/Lab/Share/Anwar/fUSiData/{subject}/*YSStruct.mat'
-        fusi_files = glob(fusi_pattern.format(subject=subject_name))
-        fusi_dates = [tuple(path.split('/')[-1].split('.')
-                            [0].split('_')[0].split('-')) for path in fusi_files]
-        date_codes = ['%s%s%s' % date for date in fusi_dates]
-        date2fusi = {k: v for k, v in zip(date_codes, fusi_files)}
-
-        date_sessions = {}
-
-        behavior_pattern = '/cortexlab/zubjects/Subjects/{subject}/{year}-{month}-{day}/*/*ProcBlock.mat'
-        date2behavior = {}
-        for date in fusi_dates:
-            datecode = '%s%s%s' % date
-            year, month, day = date
-            behavior_files = glob(behavior_pattern.format(subject=subject_name,
-                                                          year=year,
-                                                          month=month,
-                                                          day=day))
-            date2behavior[datecode] = sorted(behavior_files)
-            day_sessions = {sess.split('/')[-1]: i for i, sess in enumerate(get_sessions(subject_name, year, month, day))
-                            if len(sess.split('/')[-1]) < 2}
-            valid_sessions = [fl.split('_')[1] for fl in behavior_files]
-            date_sessions[datecode] = {
-                sess: day_sessions[sess] for sess in valid_sessions}
-
-        if verbose:
-            for date in sorted(list(date2fusi.keys())):
-                print(date)
-                print(date2fusi[date])
-                print('\n'.join(date2behavior[date]))
-
-        self._date_sessions = date_sessions
-        # self._sessions = sessions
-        self._date2behavior = date2behavior
-        self._date2fusi = date2fusi
-
-        ##
-        self.subject_name = subject_name
-        self.fusi_session = None
-        self.fusi_date = None
-
-    def view_session_names(self, DATE):
-        '''Print the name of the experiments recorded during date.
-        '''
-
-        for sessidx in range(len(self._date_sessions[DATE])):
-            sessions = self._date_sessions[DATE]
-            SESSION = list(sessions.values())[sessidx]
-
-            index2sess = {v: k for k, v in sessions.items()}
-            sessnum = index2sess[SESSION]
-            matfile = self._date2behavior[DATE][sessidx]
-
-            matdat = matlab_data(matfile)
-            info = (matfile, self.subject_name, DATE,
-                    sessidx, getattr(matdat['blk'], 'expDef'))
-            print('[%s] - %s on %s (sessidx=%i): %s' % info)
-
-    def get_session_names(self, DATE):
-        '''Extract the experiment name and its index into the fusi data
-        '''
-        out = {}
-        for sessidx in range(len(self._date_sessions[DATE])):
-            sessions = self._date_sessions[DATE]
-            SESSION = list(sessions.values())[sessidx]
-
-            index2sess = {v: k for k, v in sessions.items()}
-            sessnum = index2sess[SESSION]
-            matfile = self._date2behavior[DATE][sessidx]
-            matdat = matlab_data(matfile)
-            out[getattr(matdat['blk'], 'expDef')] = sessidx
-        return out
-
-    def get_experiment_dates(self):
-        '''Extract the dates of all experiments available for fusi data
-        '''
-        return sorted(list(self._date2fusi.keys()))
-
-    def view_experiment_dates(self):
-        '''Print all dates of fusi experiemtns
-        '''
-        print('Available experiments:')
-        print(', '.join(self._date2fusi.keys()))
-
-    def load_fusi_date(self, date):
-        '''Load MATLAB HDF file containing fusi data from that date
-        '''
-
-        assert date in self._date2fusi
-        flname = self._date2fusi[date]
-        self.fusi_object = MatlabHDF(flname)
-        shape = dataobj.load_content('fusi/dopplerFast', (0, 0))
-
-        self.fusi_image_shape = shape[1:]
-        self.fusi_session = None
-        self.fusi_date = date
-
-    def get_session_fusi(self, date, session, normalize=True):
-        '''Load time and data array for an experiment
-        '''
-        self.load_fusi_date(date)
-        ob = self.fusi_object.load_content('fusi/dopplerFast', (session, 0))
-        fusi_signals = ob[:]    # read data object
-        if normalize:
-            # normalize to range: [0-100]
-            fusi_signals -= fusi_signals.min()
-            fusi_signals /= fusi_signals.max()
-            fusi_signals *= 100
-
-        fusi_times = dataobj.load_content(
-            'fusi/tAxisFast', (session, 0))[:].squeeze()
-        return fusi_times, fusi_signals
-
-    def load_session_behavior(self, DATE, session):
-        '''Load MATLAB MAT file containing experiment details for date-session
-        '''
-        # index in fusi data HDF vs. the folder name on server
-        sessions = self._date_sessions[DATE]
-        absolute_session_index = list(sessions.values())[session]
-
-        index2sess = {v: k for k, v in sessions.items()}
-        sessnum = index2sess[absolute_session_index]
-        matfile = self._date2behavior[DATE][session]
-        matdat = matlab_data(matfile)
-        print(matfile, getattr(matdat['blk'], 'expDef'), session)
-        self.matdat = matdat
-        self.blk = matdat['blk']
-        self.fus = matdat['fus']
-
-    def get_session_behavior(self, date, session, **kwargs):
-        '''Extract experimental features for each trial in the date-session
-
-        kwargs:
-            correct_only : only return correct trials
-        '''
-
-        self.meta_features = [('visual', 'L'), ('visual', 'R'),
-                              ('auditory', 'L'), ('auditory', 'R'),
-                              ('motor', 'L'), ('motor', 'R'),
-                              ('reward', 'correct')]
-
-        self.load_session_behavior(date, session)
-        matdat = self.matdat
-
-        trials = {}
-        for edx, (event, location) in enumerate(self.meta_features):
-            times, feature_vec = stimulus_vector(
-                matdat, event, location, **kwargs)
-            trials['%s_%s' % (event, location)] = (times, feature_vec)
-        return trials

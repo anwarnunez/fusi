@@ -1899,7 +1899,7 @@ class MetaBlock(MetaSession):
         mask = hdf_load(str(fl), 'outsidebrain_mask')
         return mask.astype(np.bool)
 
-    def fusi_get_raw_data_object(self, dataroot='/home/anunez/sambas/zultra/h/fUSiFullData/', nmax=1):
+    def fusi_get_raw_data_object(self, dataroot='.', nmax=1):
         '''
         Parameters
         ----------

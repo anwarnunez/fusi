@@ -276,7 +276,8 @@ def allenccf_main_areas(min_nparents=6, max_nparents=np.inf,
         Allen CCF area annotations by index.
     '''
     import pandas
-    table = pandas.read_csv('/home/anunez/repos/allenCCF/structure_tree_safe_2017.csv')
+    from fusi.config import DATA_ROOT
+    table = pandas.read_csv(f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv')
 
     parents = {int(table.id[idx]) : '/'.join(t.split('/')[:-2]) for idx, t in enumerate(np.asarray(table.structure_id_path.values))}
     nparents = {int(table.id[idx]) : len(t.split('/')) for idx, t in enumerate(np.asarray(table.structure_id_path.values))}
@@ -344,6 +345,8 @@ def cleanup_vasculature_atlas(arr, anterior=False):
     out : np.ndarray, or nibabel.Nifti1Image
     '''
     import pandas
+    from fusi.config import DATA_ROOT
+    csvpath = f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv'
 
     is_image = False
     if isinstance(arr, nib.Nifti1Image):
@@ -351,8 +354,6 @@ def cleanup_vasculature_atlas(arr, anterior=False):
         aff = arr.affine.copy()
         arr = np.asarray(arr.get_fdata()).copy()
         is_image = True
-
-    csvpath = '/home/anunez/repos/allenCCF/structure_tree_safe_2017.csv'
 
     allen_ids = np.asarray(pandas.read_csv(csvpath).id.values).astype(np.int)
     vasc_ids = np.unique(arr).astype(np.int)
@@ -430,11 +431,8 @@ def remap_allen_id2index(dat):
     im : nibabel.Nifti1Image
         Volume whose entries are the table indeces of the Allen CCF IDs.
     '''
-
-
-    csvpath = '/home/anunez/repos/allenCCF/structure_tree_safe_2017.csv'
-    # annotation = np.load('annotation_volume_10um_by_index.npy')
-    # uniq = np.unique(annotation)
+    from fusi.config import DATA_ROOT
+    csvpath = f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv'
 
     table = np.loadtxt(csvpath, delimiter=',', dtype='S')
     content = table[1:]
@@ -476,8 +474,9 @@ def remap_allen_id2index(dat):
 def allenccf_cmap(matplotlib=True):
     import matplotlib.colors
     import pandas
-    csvpath = '/home/anunez/repos/allenCCF/structure_tree_safe_2017.csv'
+    from fusi.config import DATA_ROOT
 
+    csvpath = f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv'
     table = pandas.read_csv(csvpath)
 
     colors = {}

@@ -989,35 +989,6 @@ def hex2rgba(h):
     return tuple(rgb + [0])
 
 
-def export_cvs2lut_allenatlas(csvpath='/home/anunez/repos/allenCCF/structure_tree_safe_2017.csv'):
-    '''THIS IS OUTDATED
-    '''
-    BREAKME
-    table = np.loadtxt(csvpath, delimiter=',', dtype='S')
-    content = table[1:]
-    column_names = table[0, :]
-    print(column_names)
-    data_id = list(content[:,0])
-    data_text = list(content[:,column_names == b'safe_name'].squeeze())
-    data_text = ['_'.join(words.decode().split()) for words in data_text]
-    data_hexcolors = content[:,column_names == b'color_hex_triplet'].squeeze()
-    data_colors = list(map(hex2rgba, data_hexcolors))
-
-    lines = []
-    with open('allen_ccf_lut.txt', 'w') as fl:
-        for rowidx, (idd, name, rgba) in enumerate(zip(data_id,
-                                                       data_text,
-                                                       data_colors)):
-            if name == '' or idd.decode() == '':
-                continue
-            (r, g, b, a) = list(map(str, rgba))
-            string = '\t'.join(list((idd.decode(),
-                                     name,
-                                     r, g, b, a)))
-            print(string)
-            fl.write(string+'\n')
-
-
 chronometer = StopWatch()
 
 def tiff2arr(fl, verbose=True):
