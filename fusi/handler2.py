@@ -1362,9 +1362,6 @@ class MetaSession(object):
         ----------
         slice_number (int): Index of the slice we want
         probe_name (str)
-
-        Parameters
-        ----------
         trim_beg: data[beg:]
         trim_end: data[:end]
 
@@ -1492,9 +1489,6 @@ class MetaSession(object):
         ----------
         slice_number (int): Index of the slice we want
         probe_name (str)
-
-        Parameters
-        ----------
         trim_beg: data[beg:]
         trim_end: data[:end]
 
