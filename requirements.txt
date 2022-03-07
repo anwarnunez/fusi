@@ -1,8 +1,8 @@
 numpy
 scipy
 matplotlib
-moten
-tikreg
+git+https://github.com/gallantlab/pymoten@0.0.4
+git+https://github.com/gallantlab/tikreg@0.0.2
 allen
 nibabel
 h5py
