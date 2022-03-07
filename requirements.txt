@@ -1,0 +1,9 @@
+numpy
+scipy
+matplotlib
+moten
+tikreg
+allen
+nibabel
+h5py
+allensdk
