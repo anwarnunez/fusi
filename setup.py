@@ -48,7 +48,9 @@ def main(**kwargs):
           author='Anwar O. Nunez-Elizalde',
           author_email='anwarnunez@gmail.com',
           url='https://anwarnunez.github.io/fusi/',
-          packages=['fusi'],
+          packages=['fusi',
+                    'fusi.io',
+                    'fusi.extras'],
           package_data={
               'fusi' :[
                   'defaults.cfg',
