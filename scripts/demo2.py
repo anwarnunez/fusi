@@ -1,13 +1,14 @@
-from fusi import handler2 as handler
-from fusi import metahelper
 import numpy as np
 from scipy.stats import zscore
 from matplotlib import pyplot as plt
 
 import fusi.config
 # Enter the path to the downloaded "Subjects" directory
-data_location = '/store/fast/fusi_dataset_export/Subjects'
+data_location = '/path/to/extracted/data/Subjects'
 fusi.config.set_dataset_path(data_location)
+
+from fusi import handler2 as handler
+from fusi import metahelper
 
 
 #############################
