@@ -1157,9 +1157,10 @@ class MetaSession(object):
     def generate_analysis_blocks(self):
         '''
         '''
-        print('Found %i blocks for analysis' % len(self.analysis_blocks))
         for block_number in self.analysis_blocks:
-            yield MetaBlock(self.subject_name, self.session_name, block_number, verbose=self.verbose)
+            block = MetaBlock(self.subject_name, self.session_name, block_number, verbose=self.verbose)
+            if block.task_name in ('spontaneous', 'checkerboard'):
+                yield block
 
     def generate_fusi_slice_blocks(self, slice_number=0):
         '''
