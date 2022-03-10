@@ -7,5 +7,5 @@ matplotlib
 pandas
 h5py
 tables==3.6.1
-markupsafe==0.15
+markupsafe==1.1.1
 allensdk
