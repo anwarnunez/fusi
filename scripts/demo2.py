@@ -41,7 +41,7 @@ fusi_times, fusi_rh, fr_rh = metahelper.get_fusi_roi_mask_within_npxprobe(
 # Plotting
 fig, axes = plt.subplots(ncols=2)
 V1_data = dict(LH=(fusi_times, fusi_lh, fr_lh),
-               RH=(fusi_times, fusi_lh, fr_lh))
+               RH=(fusi_times, fusi_rh, fr_rh))
 
 for idx, (hemi, (times, fusi_trace, fr)) in enumerate(V1_data.items()):
     ax = axes[idx]
@@ -84,7 +84,7 @@ fusi_times, fusi_rh, fr_rh = metahelper.get_fusi_roi_mask_within_npxprobe(
 # Plotting
 fig, axes = plt.subplots(ncols=2)
 HPC_data = dict(LH=(fusi_times, fusi_lh, fr_lh),
-                RH=(fusi_times, fusi_lh, fr_lh))
+                RH=(fusi_times, fusi_rh, fr_rh))
 
 for idx, (hemi, (times, fusi_trace, fr)) in enumerate(HPC_data.items()):
     ax = axes[idx]
