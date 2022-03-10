@@ -3,6 +3,7 @@ git+https://github.com/gallantlab/tikreg@0.0.2
 numpy
 scipy
 nibabel
+pyqt5
 matplotlib
 pandas
 h5py
