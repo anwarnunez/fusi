@@ -100,6 +100,7 @@ def detrend_fusi(fusi_times, fusi_data, mask,
                  output_normalization='pixpctchg',
                  clip_value=None, clip_sdvalue=3,
                  fusi_dt=0.3,
+                 verbose=False,
                  trim_before_beg=5, trim_before_end=5,
                  trim_after_beg=10, trim_after_end=10):
     '''
@@ -112,7 +113,8 @@ def detrend_fusi(fusi_times, fusi_data, mask,
     fusi_times = fusi_times[times_valid]
     fusi_data = fusi_data[times_valid]
     fusi_shape = fusi_data.shape
-    print(fusi_times.shape, fusi_data.shape)
+    if verbose:
+        print(fusi_times.shape, fusi_data.shape)
 
     # Extract time course for probe ROI
     if mask is not None:
@@ -140,7 +142,8 @@ def detrend_fusi(fusi_times, fusi_data, mask,
     yfull = yfull[times_valid]
     fusi_times = fusi_times[times_valid]
     fusi_data = fusi_data[times_valid]
-    print(fusi_times.shape, fusi_data.shape)
+    if verbose:
+        print(fusi_times.shape, fusi_data.shape)
     yfull -= yfull.mean(0)
     return fusi_times, yfull
 

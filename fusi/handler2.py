@@ -796,7 +796,7 @@ class MetaSession(object):
 
         return dat
 
-    def fusi_get_allenccf_slices(self, slice_number=None, scale_factor=1, remove_outside=True):
+    def fusi_get_allenccf_slices(self, slice_number, scale_factor=1, remove_outside=True):
         '''
         '''
         arr = self.fusi_get_allenccf_byindex(scale_factor)
@@ -1978,12 +1978,16 @@ class MetaBlock(MetaSession):
             print('fUSi probe ROI voxels: %i' % mask.sum())
         return mask
 
-    def ephys_get_probe_data(self, probe_name):
+    def ephys_get_probe_data(self, probe_name, verbose=True):
         '''
         '''
         flname = self.cortexlab_mk_filename(
             '%s_spikes.hdf' % probe_name, subfolder='aligned2pxi')
         assert flname.exists()
+
+        if verbose:
+            print(f'Loading spike data: {pathlib.Path(flname).name}...')
+
         clusters = hdf_load(flname, 'clusters')
         times = hdf_load(flname, 'times')
         return times, clusters
@@ -2014,7 +2018,7 @@ class MetaBlock(MetaSession):
         return self.fusi_get_data(**kwargs)[0]
 
     def fusi_get_data(self, dt_ms=300, window_ms=400, svddrop=15,
-                      freq_cutoffhz=15, roi_name=None, mirrored=False):
+                      freq_cutoffhz=15, roi_name=None, mirrored=False, verbose=True):
         '''Specify the parameters of the preprocessed fUSi data to load
 
         Parameters
@@ -2101,7 +2105,8 @@ class MetaBlock(MetaSession):
         fusi_preproc_fl = self.block_path.joinpath('fusi', flname)
         if not fusi_preproc_fl.exists():
             raise IOError('Does not exist: %s' % fusi_preproc_fl)
-        print(fusi_preproc_fl)
+        if verbose:
+            print(f'Loading fUSI data: {pathlib.Path(fusi_preproc_fl).name}...')
         if np.isscalar(freq_cutoffhz):
             fusi_data = readers.hdf_load(fusi_preproc_fl, 'data')
         else:

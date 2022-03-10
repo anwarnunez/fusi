@@ -52,7 +52,7 @@ def _hdf_field(hdfobj, field, mask=False):
 
 
 def hdf_load(fl, field=None, mask=False,
-             verbose=True, cache=False):
+             verbose=False, cache=False):
     '''
     Load HDF file.
 

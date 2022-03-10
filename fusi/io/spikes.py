@@ -13,6 +13,7 @@ from scipy import sparse
 # Helper functions
 ##############################
 
+
 def lowest_uint(nsamples):
     '''Lowest unsigned integer value that fits nsamples
     '''
@@ -270,17 +271,18 @@ def spike_count_matrix_from_sparse(spike_times, sparse_matrix,
         dtype = lowest_uint(max_nspikes)
 
     # build time and spike matrix
-    newtimes = bin_time_edges[:-1] # sample times are the start of bins
+    newtimes = bin_time_edges[:-1]  # sample times are the start of bins
     spike_matrix = np.zeros((len(newtimes), nclusters), dtype=dtype)
 
     for tdx, (start, end) in iterator_func(enumerate(zip(bin_indexes[:-1], bin_indexes[1:])),
-                                           '%s. Generating spike count matrix'%__name__,
+                                           '%s. Generating spike count matrix' % __name__,
                                            total=len(newtimes)):
         if start == end:
             # no spikes
             continue
         spike_matrix[tdx] = sparse_matrix[start:end].sum(0)
     return newtimes, spike_matrix
+
 
 def event_related_responses(spike_times, spike_clusters, event_times,
                             duration=1.0, dt=0.01,
@@ -321,14 +323,17 @@ def event_related_responses(spike_times, spike_clusters, event_times,
                                                      nclusters=nclusters)
     nclusters = sparse_matrix.shape[1]
     event_nsamples = int(np.ceil(duration/dt))
-    spike_matrix = np.zeros((len(event_times), event_nsamples, nclusters), dtype=dtype)
-    event_time_bins = np.zeros((len(event_times), event_nsamples), dtype=np.float)
+    spike_matrix = np.zeros(
+        (len(event_times), event_nsamples, nclusters), dtype=dtype)
+    event_time_bins = np.zeros(
+        (len(event_times), event_nsamples), dtype=np.float)
 
     # determine minimum dtype
     # bin_edge_left  = np.searchsorted(spike_times, event_times, side='right')
-    bin_edge_left  = np.digitize(event_times, spike_times, right=True)
+    bin_edge_left = np.digitize(event_times, spike_times, right=True)
     # bin_edge_right = np.searchsorted(spike_times, event_times + duration, side='right')
-    bin_edge_right = np.digitize(event_times + duration, spike_times, right=True)
+    bin_edge_right = np.digitize(
+        event_times + duration, spike_times, right=True)
     if dtype is None:
         max_nspikes = (bin_edge_right - bin_edge_left).max()
         dtype = lowest_uint(max_nspikes)
@@ -340,7 +345,7 @@ def event_related_responses(spike_times, spike_clusters, event_times,
 
     # go through the spikes
     for edx, event_time in iterator_func(enumerate(event_times),
-                                         '%s. event time-locked spike responses'%__name__,
+                                         '%s. event time-locked spike responses' % __name__,
                                          total=len(event_times)):
         # compute the time bin edgeso
         time_bins = time_bins_from_timestamps(np.atleast_1d(event_time),
@@ -348,7 +353,7 @@ def event_related_responses(spike_times, spike_clusters, event_times,
                                               t0=event_time,
                                               duration=duration[edx])
         # bin_time_edges  = np.searchsorted(spike_times, time_bins, side='right')
-        bin_time_edges  = np.digitize(time_bins, spike_times, right=True)
+        bin_time_edges = np.digitize(time_bins, spike_times, right=True)
         event_time_bins[edx] = time_bins[:-1]
 
         for tdx, (start, end) in enumerate(zip(bin_time_edges[:-1], bin_time_edges[1:])):
@@ -395,9 +400,10 @@ def time_locked_spike_matrix(spike_times, spike_clusters,
     nclusters = sparse_matrix.shape[1]
 
     # bin_edge_left  = np.searchsorted(spike_times, event_times, side='right')
-    bin_edge_left  = np.digitize(event_times, spike_times, right=True)
+    bin_edge_left = np.digitize(event_times, spike_times, right=True)
     # bin_edge_right = np.searchsorted(spike_times, event_times + duration, side='right')
-    bin_edge_right = np.digitize(event_times + duration, spike_times, right=True)
+    bin_edge_right = np.digitize(
+        event_times + duration, spike_times, right=True)
 
     if dtype is None:
         max_nspikes = (bin_edge_right - bin_edge_left).max()
@@ -405,7 +411,7 @@ def time_locked_spike_matrix(spike_times, spike_clusters,
     spike_matrix = np.zeros((len(event_times), nclusters), dtype=dtype)
 
     for tdx, (start, end) in iterator_func(enumerate(zip(bin_edge_left, bin_edge_right)),
-                                           '%s. time-locked spike matrix'%__name__,
+                                           '%s. time-locked spike matrix' % __name__,
                                            total=len(event_times)):
         if start == end:
             # no spikes
@@ -459,10 +465,18 @@ def spike_count_matrix(spike_times, spike_clusters, nclusters=None,
 # core classes
 ##############################
 
+
 class ProbeSpikes(object):
     '''Easy computation of spike responses.
     '''
-    def __init__(self, spike_times, spike_clusters, nclusters=None, good_clusters=None, cluster_depths=None):
+
+    def __init__(self,
+                 spike_times,
+                 spike_clusters,
+                 nclusters=None,
+                 good_clusters=None,
+                 cluster_depths=None,
+                 verbose=False):
         '''
         spike_times
         spike_clusters
@@ -479,10 +493,13 @@ class ProbeSpikes(object):
         # get sparse matrix representation of data
         self.sparse_matrix = self.get_sparse_spike_matrix()
         self.MBsize = self.sparse_matrix.data.nbytes/(2**20)
+        if verbose:
+            print(self)
 
     def __repr__(self):
-        info = (__name__, type(self).__name__, self.nspikes, self.nclusters, self.MBsize)
-        return '<%s.%s (nspikes=%i, nclusters=%i) [%0.02fMB]>'%info
+        info = (__name__, type(self).__name__,
+                self.nspikes, self.nclusters, self.MBsize)
+        return '<%s.%s (nspikes=%i, nclusters=%i) [%0.02fMB]>' % info
 
     def get_sparse_spike_matrix(self):
         '''Sparse matrix representation of all spikes and all clusters.
@@ -514,7 +531,8 @@ class ProbeSpikes(object):
         if start_time is None:
             start_time = self.times.min()
 
-        new_times, bin_spike_matrix = self.spike_count_matrix(dt=dt, t0=start_time)
+        new_times, bin_spike_matrix = self.spike_count_matrix(
+            dt=dt, t0=start_time)
         return new_times, bin_spike_matrix
 
     def event_response(self, event_onset=0.0, duration=1.0, dt=0.05):
@@ -640,5 +658,6 @@ class ProbeSpikes(object):
 
         if good_clusters is None:
             good_clusters = self.good_clusters
-        mua_nclusters, mua_matrix = mua_from_spike_cluster_matrix(spike_matrix, cluster_depths, good_clusters=good_clusters, **kwargs)
+        mua_nclusters, mua_matrix = mua_from_spike_cluster_matrix(
+            spike_matrix, cluster_depths, good_clusters=good_clusters, **kwargs)
         return mua_nclusters, mua_matrix
