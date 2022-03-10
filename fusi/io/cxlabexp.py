@@ -192,7 +192,6 @@ class ExperimentData(DataStore):
         HWEVENTS = [t.name[0] for t in timeline.hw[0,0].inputs[0]]
         self.hwevents = HWEVENTS
         self.timeline = timeline
-        print(HWEVENTS)
 
     def load_protocol(self):
         '''

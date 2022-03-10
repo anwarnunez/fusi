@@ -123,6 +123,7 @@ def estimate_probe_xyz_for_probe(angle_downward_inclination,
                                  probe_depth_mm,
                                  dv_projection_mm=None,
                                  angle_azimuth_nominal=45,
+                                 verbose=False,
                                  **kwargs):
     '''
     xwidth_mm is signed -LH, +RH
@@ -149,9 +150,11 @@ def estimate_probe_xyz_for_probe(angle_downward_inclination,
                                       right_hemisphere=right_hemisphere,
                                       towards_midline=True,
                                       **kwargs)
-    if dv_projection_mm:
-        print('DV difference %0.04f[mm]: (diff=%0.04f[mm])'%(dv_projection_mm, xyz[-1] - -dv_projection_mm))
-    print(xyz)
+    if dv_projection_mm and verbose is True:
+        info = (dv_projection_mm, xyz[-1] - -dv_projection_mm)
+        print('DV difference %0.04f[mm]: (diff=%0.04f[mm])'%info)
+    if verbose is True:
+        print(xyz)
     return xyz
 
 def estimate_probe_xyz_position(angle_downward_inclination,
@@ -160,6 +163,7 @@ def estimate_probe_xyz_position(angle_downward_inclination,
                                 right_hemisphere=True,
                                 towards_midline=True,
                                 angle_azimuth_nominal=45,
+                                verbose=False,
                                 ):
     '''All terms relative to manipulator position.
 
@@ -212,7 +216,8 @@ def estimate_probe_xyz_position(angle_downward_inclination,
                                                      90 - angle_azimuth_nominal*flip,
                                                      probe_depth_mm)
     xyz_from_proj = np.asarray([xpos, ypos, zpos])
-    print('Difference: from 90 angles (azimuth=%0.02f, incli=%0.02f):'%(90-angle_azimuth, 90-angle_inclination),
+    if verbose:
+        print('Difference: from 90 angles (azimuth=%0.02f, incli=%0.02f):'%(90-angle_azimuth, 90-angle_inclination),
           xyz_from_proj - xyz_from_angles)
     return xyz_from_proj
 
@@ -832,4 +837,4 @@ def test_array2nifti():
 
 
 if __name__ == '__main__':
-    pass 
+    pass
