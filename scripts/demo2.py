@@ -95,3 +95,5 @@ for idx, (hemi, (times, fusi_trace, fr)) in enumerate(HPC_data.items()):
     ax.legend(loc='best')
     ax.set_title(hemi)
 fig.suptitle(area_name)
+
+plt.show()

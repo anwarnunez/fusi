@@ -78,3 +78,5 @@ ax.set_xlabel('Time [s]')
 ax.set_ylabel('Activity [z-score]')
 ax.legend(loc='best')
 ax.set_title(subject_block)
+
+plt.show()
