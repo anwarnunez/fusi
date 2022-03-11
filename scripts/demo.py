@@ -3,9 +3,10 @@ from scipy.stats import zscore
 from matplotlib import pyplot as plt
 
 import fusilib.config
-# Enter the path to the downloaded "Subjects" directory
-data_location = '/path/to/extracted/data/Subjects'
-fusilib.config.set_dataset_path(data_location)
+# # Enter the path to the downloaded "Subjects" directory.
+# # By default, the path is set to the current working directory.
+# data_location = '/path/to/extracted/data/Subjects'
+# fusilib.config.set_dataset_path(data_location)
 
 from fusilib import handler2 as handler
 from fusilib import metahelper
