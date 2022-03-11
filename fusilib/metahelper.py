@@ -2,10 +2,10 @@ import numpy as np
 from scipy.stats import zscore
 
 from tikreg import utils as tikutils
-from fusi import handler2 as handler, utils as futils
-from fusi.io import spikes
+from fusilib import handler2 as handler, utils as futils
+from fusilib.io import spikes
 
-from fusi.extras import readers
+from fusilib.extras import readers
 
 
 ##############################
@@ -56,7 +56,7 @@ def get_population_hrf(area_name, condition, negation=False, normalize=True, t0=
     t0 : scalar
         First time point of HRF
     '''
-    from fusi.config import DATA_ROOT
+    from fusilib.config import DATA_ROOT
 
     assert condition in STIMULUS_CONDITIONS
     if negation:
@@ -159,7 +159,7 @@ def get_fusi_roi_mask_within_npxprobe(subject_block,
                                       temporal_filter_window=35):
     '''
     '''
-    from fusi import experiments, allen
+    from fusilib import experiments, allen
     # 2D Projection of NPx probe in fUSI
     # , 'fusi_%s_section_in_probe_roi.hdf'%FUSI_PROBE_MASK_NAME)
     probe_mask = subject_block.fusi_get_probe_master_mask(probe_name)

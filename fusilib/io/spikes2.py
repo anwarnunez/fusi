@@ -8,8 +8,6 @@ import time
 import numpy as np
 from scipy import sparse
 
-# from fusi import utils as futils
-
 ##############################
 # Helper functions
 ##############################

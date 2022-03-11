@@ -1,7 +1,7 @@
 '''
 '''
 import numpy as np
-import fusi.io.spikes2 as iospikes
+import fusilib.io.spikes2 as iospikes
 
 time_locked_events_matrix = iospikes.time_locked_spike_matrix
 

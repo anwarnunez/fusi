@@ -12,8 +12,8 @@ import numpy as np
 from scipy import signal
 import pandas
 
-from fusi.extras import readers
-from fusi.config import DATA_ROOT
+from fusilib.extras import readers
+from fusilib.config import DATA_ROOT
 
 
 def convert_dlccsv2df(flname, verbose=True):

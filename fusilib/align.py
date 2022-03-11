@@ -6,7 +6,7 @@ from scipy import ndimage
 
 import nibabel as nib
 
-from fusi.utils import hex2rgba
+from fusilib.utils import hex2rgba
 
 def cartesian2spherical(xyz):
     '''
@@ -281,7 +281,7 @@ def allenccf_main_areas(min_nparents=6, max_nparents=np.inf,
         Allen CCF area annotations by index.
     '''
     import pandas
-    from fusi.config import DATA_ROOT
+    from fusilib.config import DATA_ROOT
     table = pandas.read_csv(f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv')
 
     parents = {int(table.id[idx]) : '/'.join(t.split('/')[:-2]) for idx, t in enumerate(np.asarray(table.structure_id_path.values))}
@@ -350,7 +350,7 @@ def cleanup_vasculature_atlas(arr, anterior=False):
     out : np.ndarray, or nibabel.Nifti1Image
     '''
     import pandas
-    from fusi.config import DATA_ROOT
+    from fusilib.config import DATA_ROOT
     csvpath = f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv'
 
     is_image = False
@@ -436,7 +436,7 @@ def remap_allen_id2index(dat):
     im : nibabel.Nifti1Image
         Volume whose entries are the table indeces of the Allen CCF IDs.
     '''
-    from fusi.config import DATA_ROOT
+    from fusilib.config import DATA_ROOT
     csvpath = f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv'
 
     table = np.loadtxt(csvpath, delimiter=',', dtype='S')
@@ -479,7 +479,7 @@ def remap_allen_id2index(dat):
 def allenccf_cmap(matplotlib=True):
     import matplotlib.colors
     import pandas
-    from fusi.config import DATA_ROOT
+    from fusilib.config import DATA_ROOT
 
     csvpath = f'{DATA_ROOT}/extras/structure_tree_safe_2017.csv'
     table = pandas.read_csv(csvpath)
@@ -751,7 +751,7 @@ def estimate_affine_alignment(source_data,
                                        AffineTransform3D)
     from dipy.align.metrics import CCMetric
 
-    from fusi.utils import StopWatch
+    from fusilib.utils import StopWatch
 
     print('Mapping from', source_data.shape,
           'to', dest_data.shape)

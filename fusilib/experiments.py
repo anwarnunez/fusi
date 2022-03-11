@@ -1,8 +1,8 @@
 from collections import defaultdict as ddic
 import numpy as np
 
-from fusi import align as _align
-from fusi import handler2 as handler
+from fusilib import align as _align
+from fusilib import handler2 as handler
 
 
 probe2hemisphere = {'CR017' : {'2019-11-13' : {'probe00' : 'RH',

@@ -107,7 +107,7 @@ def generate_channel_lfp_bands(flname,
         Array containing spectral power for each band
         [alpha, beta, gamma, hgamma]
     '''
-    from fusi.io import spikeglx as glx
+    from fusilib.io import spikeglx as glx
 
     mmap = glx.bin2memmap(flname)
     if channels == 'all':
@@ -154,7 +154,7 @@ def generate_neural_lfp_bands(flname, channels='all'):
         * gamma : (m,)
         * hgamma : (m,)
     '''
-    from fusi.io import spikeglx as glx
+    from fusilib.io import spikeglx as glx
 
     # Bands for all channels
     channel_bands = ddict(list)

@@ -11,7 +11,7 @@ from glob import glob
 
 import numpy as np
 
-import fusi.utils
+import fusilib.utils
 
 
 ##############################
@@ -69,7 +69,7 @@ def load_phy_params(path, params_flname='params.py'):
     '''Load PHY `params.py` as a dictionary
     '''
     # Parse phy parameters
-    params = fusi.utils.Bunch()
+    params = fusilib.utils.Bunch()
 
     flname = os.path.join(path, params_flname)
     if not os.path.exists(flname):
@@ -308,7 +308,7 @@ class ProbeHandler(EphysFolder):
     def get_digital_channel(self, channel_index=-1):
         '''Load the digital channel from the binary AP ephys data.
         '''
-        from fusi.io import spikeglx
+        from fusilib.io import spikeglx
         path = self.get_ap_path()
         print('Loading digital signal from: %s'%path)
         probe_memmap = spikeglx.get_spikeglx_memmap(path)
@@ -322,7 +322,7 @@ class ProbeHandler(EphysFolder):
     def get_spikeglx_metadata(self):
         '''Load SpikeGLX metadata for this probe
         '''
-        from fusi.io import spikeglx
+        from fusilib.io import spikeglx
         path = self.get_ap_path()
         return spikeglx.read_metadata(path)
 
@@ -330,7 +330,7 @@ class ProbeHandler(EphysFolder):
     def sample_ratehz(self):
         '''Sample rate [Hz] read from SpikeGLX file
         '''
-        from fusi.io import spikeglx
+        from fusilib.io import spikeglx
         metadata = spikeglx.read_metadata(self.get_ap_path())
         return metadata['imSampRate']
 

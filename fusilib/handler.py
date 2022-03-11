@@ -19,8 +19,8 @@ from scipy.stats import zscore
 
 
 from tikreg import models, utils as tikutils
-from fusi.extras import stats
-from fusi.extras import readers
+from fusilib.extras import stats
+from fusilib.extras import readers
 
 
 def date2isoformat(date_tuple):
@@ -180,7 +180,7 @@ class BasicfUSi(object):
         '''
         '''
         from matplotlib import pyplot as plt
-        from fusi import viz
+        from fusilib import viz
         aspect = kwargs.get('aspect', self.image_aspect_ratio)
         kwargs['aspect'] = aspect
         images = self.transform_fusi_twod2image(twod)
@@ -745,7 +745,7 @@ class ProcfUSi(BasicfUSi):
         self.load_fusi_goodframes_data(**good_frames_kwargs)
         fusi_data = self.fusi_data.copy()
         if pctsignalchange:
-            from fusi.preproc import preproc_loader
+            from fusilib.preproc import preproc_loader
             fusi_data = preproc_loader.pixelwise_pctsignalchange(fusi_data)
 
         mask = self.load_nonbrain_mask().ravel()
@@ -798,7 +798,7 @@ class SimultaneousfUSiNeuropixels(object):
     def load_eye_video_buffer(self):
         '''
         '''
-        from fusi.config import DATA_ROOT
+        from fusilib.config import DATA_ROOT
         pattern = DATA_ROOT + \
             '/{subject}/{year}-{month}-{day}/{session_oneidx}'
         root = pattern.format(subject=self.subject_name,
@@ -822,7 +822,7 @@ class SimultaneousfUSiNeuropixels(object):
         '''
         '''
         if root is None:
-            from fusi.config import DATA_ROOT
+            from fusilib.config import DATA_ROOT
             root = DATA_ROOT
         pattern = root + '/{subject}/{year}-{month}-{day}/{session_oneidx}'
         root = pattern.format(subject=self.subject_name,
@@ -1136,7 +1136,7 @@ class MatlabHDF(object):
 
 def get_sessions(subject, year, month, day, root=None, matcher='*'):
     if root is None:
-        from fusi.config import DATA_ROOT
+        from fusilib.config import DATA_ROOT
         root = DATA_ROOT
     date = '{}-{}-{}'.format(year, month, day)
     path = os.path.join(root, subject, date)

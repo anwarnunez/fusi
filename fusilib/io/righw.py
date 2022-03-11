@@ -3,9 +3,9 @@ import pathlib
 import itertools
 
 import numpy as np
-from fusi.config import DATA_ROOT
+from fusilib.config import DATA_ROOT
 
-from fusi.utils import band_pass_signal
+from fusilib.utils import band_pass_signal
 
 
 def can_int(val):

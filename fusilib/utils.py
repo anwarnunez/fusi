@@ -7,7 +7,7 @@ from tikreg import models, utils as tikutils
 from tikreg import models
 from tikreg import spatial_priors, temporal_priors
 
-from fusi.config import DATA_ROOT
+from fusilib.config import DATA_ROOT
 
 
 def get_peak_info(time, data, sumfunc=np.median):
@@ -56,7 +56,7 @@ def glob_loader(pattern, **kwargs):
     results_version='results_v03',
     data_root=DATA_ROOT
     '''
-    from fusi.extras import readers
+    from fusilib.extras import readers
     for fl, key in glob_local(pattern, **kwargs):
         yield readers.hdf_load(fl, key)
 
@@ -194,8 +194,8 @@ def glob_pattern(pattern,
     results_version='results_v03',
     data_root=DATA_ROOT
     '''
-    from fusi.extras import readers
-    from fusi import handler2 as handler
+    from fusilib.extras import readers
+    from fusilib import handler2 as handler
     EXPERIMENTS = {'CR017': ['2019-11-13', '2019-11-14'],
                    'CR020': ['2019-11-20', '2019-11-21', '2019-11-22'],
                    'CR019': ['2019-11-26', '2019-11-27'],
@@ -271,8 +271,8 @@ def glob_local(pattern,
     >>> files = glob_local(pattern)
     '''
     from pathlib import Path
-    from fusi.extras import readers
-    from fusi import handler2 as handler
+    from fusilib.extras import readers
+    from fusilib import handler2 as handler
     path = Path(data_root).joinpath(subject, session, results_version)
     files = path.glob(pattern)
 
@@ -408,7 +408,7 @@ def fast_find_between(continuous_times, discrete_times, window=0.050):
     >>> new_times = np.linspace(0, times.max(), len(times)/(fast_ratehz/new_ratehz))
     >>> markers = fast_find_times_between(times, new_times, window=1./new_ratehz)
     '''
-    from fusi import mp
+    from fusilib import mp
 
     def find_between(vec, before, window=0.050):
         '''
@@ -432,7 +432,7 @@ def spikes_at_times(event_times, post_event_time,
                     nclusters=None):
     '''
     '''
-    from fusi.mp import map as parallelmap
+    from fusilib.mp import map as parallelmap
     from scipy import sparse
 
     if nclusters is None:
@@ -493,7 +493,7 @@ def bin_spikes(new_onsets, window,
     -------
     spike_matrix : 2D np.ndarray (m, k)
     '''
-    from fusi.io import spikes
+    from fusilib.io import spikes
     spike_matrix = spikes.time_locked_spike_matrix(spike_times,
                                                    spike_clusters,
                                                    new_onsets,
@@ -527,7 +527,7 @@ def bin_spikes_turbo(window,
     -------
     spike_matrix : 2D np.ndarray (m, k)
     '''
-    from fusi.mp import map as parallelmap
+    from fusilib.mp import map as parallelmap
     from scipy import sparse
 
     if nclusters is None:

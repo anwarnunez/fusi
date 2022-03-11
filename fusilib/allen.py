@@ -2,7 +2,7 @@ import pandas
 import numpy as np
 from allensdk.core.reference_space_cache import ReferenceSpaceCache
 
-from fusi.config import DATA_ROOT
+from fusilib.config import DATA_ROOT
 
 reference_space_key = 'annotation/ccf_2017'
 resolution = 25

@@ -11,10 +11,10 @@ from collections import OrderedDict
 
 import numpy as np
 
-from fusi import misc, utils as futils
-from fusi.io import righw, spikeglx, phy, logs, sync
-from fusi.extras import readers
-import fusi.config
+from fusilib import misc, utils as futils
+from fusilib.io import righw, spikeglx, phy, logs, sync
+from fusilib.extras import readers
+import fusilib.config
 
 
 def hdf_load(flname, *args, **kwargs):
@@ -72,7 +72,7 @@ class MetaSession(object):
         '''
         '''
         if root is None:
-            root = fusi.config.DATA_ROOT
+            root = fusilib.config.DATA_ROOT
         root = pathlib.Path(str(root)).joinpath(subject_name)
         session_path = root.joinpath(session_name)
 
@@ -480,7 +480,7 @@ class MetaSession(object):
                 # Dynamic root path
                 if '{dataset_full_path}' in value:
                     value = value.format(
-                        dataset_full_path=fusi.config.DATA_ROOT)
+                        dataset_full_path=fusilib.config.DATA_ROOT)
 
             # store parsed result
             parsed_contents[key] = value
@@ -591,7 +591,7 @@ class MetaSession(object):
         section_header = 'location_%s_%s' % (slice_name, probe_name)
         paths = self.log_load_section(section_header)
         pprint(paths)
-        from fusi import handler
+        from fusilib import handler
         path = misc.uri_convert_uri2local(paths['fusi_data'])
         data = handler.matlab_data(path)
         if is_ystack is False:
@@ -701,7 +701,7 @@ class MetaSession(object):
         -------
         ystack : np.ndarray, (nz, nx, ny)
         '''
-        from fusi import handler
+        from fusilib import handler
         paths = self.log_load_section('fusi')
         path = misc.uri_convert_uri2local(paths['ystack_volume'])
         data = handler.matlab_data(path)
@@ -718,7 +718,7 @@ class MetaSession(object):
         -------
         image : Nifti1Image
         '''
-        from fusi import align, handler
+        from fusilib import align, handler
 
         # get volume
         arr = self.fusi_get_ystack()
@@ -844,7 +844,7 @@ class MetaSession(object):
             from matplotlib import pyplot as plt
             fig, ax = plt.subplots()
 
-        from fusi.align import allenccf_cmap
+        from fusilib.align import allenccf_cmap
         cmap, norm = allenccf_cmap()
         im = ax.matshow(dat, cmap=cmap, norm=norm,
                         aspect=self.fusi_aspect_ratio, alpha=alpha)
@@ -882,7 +882,7 @@ class MetaSession(object):
         allenccf_slice = self.fusi_get_allenccf_slices(slice_number)
 
         if area_indexes is None:
-            from fusi import align
+            from fusilib import align
             area_indexes = align.allenccf_main_areas()
 
         contours = {areaidx: measure.find_contours(
@@ -1000,7 +1000,7 @@ class MetaSession(object):
         -------
         horiz_mm_coords, vert_mm_coords
         '''
-        from fusi import handler
+        from fusilib import handler
         paths = self.log_load_section('fusi')
         path = misc.uri_convert_uri2local(paths['ystack_volume'])
         data = handler.matlab_data(path)
@@ -1102,7 +1102,7 @@ class MetaSession(object):
         '''
         assert neuron_class in ['excitatory', 'inhibitory']
 
-        from fusi.io import phy
+        from fusilib.io import phy
         probe_object = self.ephys_get_probe_object(probe_name)
         fl = probe_object.__pathobj__/'cluster_putative_neuronclass.csv'
 
@@ -1290,7 +1290,7 @@ class MetaSession(object):
         dt_ms (scalar)         : new sampling rate in [milliseconds]
         '''
 
-        from fusi import resampling
+        from fusilib import resampling
 
         fusi_block_slices = self.log_load_section(
             'fusi', 'mapping_block2slices')
@@ -1720,7 +1720,7 @@ class MetaBlock(MetaSession):
         if good_clusters is None:
             good_clusters = self.ephys_get_good_clusters(probe_name)
         cluster_depths = self.ephys_get_cluster_depths(probe_name)
-        from fusi.io import spikes
+        from fusilib.io import spikes
         return spikes.ProbeSpikes(spike_times, spike_clusters,
                                   nclusters=nclusters,
                                   good_clusters=good_clusters,
@@ -1791,7 +1791,7 @@ class MetaBlock(MetaSession):
     def fusi_get_probe_allen_mask(self, probe_name, allen_area_name=None, fusi_mirror=False, criterion=1):
         '''
         '''
-        from fusi import allen
+        from fusilib import allen
         # OLD:'fusi_%s_section_in_probe_roi.hdf'%FUSI_PROBE_MASK_NAME)
         probe_mask = self.meta_session.fusi_get_probe_master_mask(probe_name)
         brain_mask = np.logical_not(self.fusi_get_outsidebrain_mask())
@@ -1832,7 +1832,7 @@ class MetaBlock(MetaSession):
             The probe name ROI to exclude (e.g. 'probe00')
             If given, the probe ROI is removed from the area ROI.
         '''
-        from fusi import allen
+        from fusilib import allen
         # OLD:'fusi_%s_section_in_probe_roi.hdf'%FUSI_PROBE_MASK_NAME)
         brain_mask = np.logical_not(self.fusi_get_outsidebrain_mask())
 
@@ -1905,7 +1905,7 @@ class MetaBlock(MetaSession):
         dataroot (str) : Path for DAT files
         nmax (int)     : Number of images to load
         '''
-        from fusi.io import contacq
+        from fusilib.io import contacq
         dataroot = pathlib.Path(dataroot)
         data_path = dataroot.joinpath(self.subject_name,
                                       misc.date_tuple2isoformat(
