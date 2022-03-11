@@ -13,7 +13,8 @@ from fusi.extras import readers
 ##############################
 zs = zscore
 
-fusi_options = {'300': dict(dt_ms=300, window_ms=400, svddrop=15, freq_cutoffhz=15)}
+fusi_options = {'300': dict(
+    dt_ms=300, window_ms=400, svddrop=15, freq_cutoffhz=15)}
 
 signal_units_normalization = {'pixpctchg': futils.pixelwise_pctsignalchange,
                               # 'pixpctchg' : futils.pixelwise_pctsignalchange_median,

@@ -52,7 +52,7 @@ def convert_dlccsv2df(flname, verbose=True):
     return df
 
 
-def cortexlab_filename2info(flname):
+def isoformat_filename2info(flname):
     '''Extract subject, date and block number from file name
 
     E.g. 2020-11-01_13_CR024_data.csv -> ('CR024', '2020-11-01', '13')
@@ -79,7 +79,7 @@ def fl2info(func):
     def wrapper(first_arg, *args, **kwargs):
         if len(args) == 0:
             # this is a filename
-            args = cortexlab_filename2info(first_arg)
+            args = isoformat_filename2info(first_arg)
         else:
             args = (first_arg,) + args
         return func(*args, **kwargs)

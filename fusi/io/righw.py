@@ -7,6 +7,7 @@ from fusi.config import DATA_ROOT
 
 from fusi.utils import band_pass_signal
 
+
 def can_int(val):
     try:
         fval = float(val)
@@ -14,16 +15,17 @@ def can_int(val):
     except:
         return False
 
-def datetuple2cortexlab(date_tuple):
+
+def datetuple2isoformat(date_tuple):
     '''
     '''
     year, month, day = date_tuple[:3]
     return '{year}-{month}-{day}'.format(year=year,
-                                         month='%02i'%month,
-                                         day='%02i'%day)
+                                         month='%02i' % month,
+                                         day='%02i' % day)
 
 
-def cortexlab_filename2info(flname):
+def isoformat_filename2info(flname):
     '''Extract subject, date and block number from file name
 
     E.g. 2020-11-01_13_CR024_data.csv -> ('CR024', '2020-11-01', '13')
@@ -43,8 +45,8 @@ def cortexlab_filename2info(flname):
     return subject, date, blocknum
 
 
-def cortexlab_filename2fullpath(flname,
-                            root=DATA_ROOT):
+def isoformat_filename2fullpath(flname,
+                                root=DATA_ROOT):
     '''Convert a cortex-lab formated filename to a full path
 
     E.g. 2020-11-01_13_CR024_data.csv gets translated to:
@@ -60,7 +62,7 @@ def cortexlab_filename2fullpath(flname,
 
     Examples
     --------
-    >>> cortexlab_filename2fullpath('2020-11-01_13_CR024_data.csv')
+    >>> isoformat_filename2fullpath('2020-11-01_13_CR024_data.csv')
     PosixPath('/DATA_ROOT/CR024/2020-11-01/13/2020-11-01_13_CR024_data.csv')
     '''
     stem = pathlib.Path(flname).stem
@@ -76,15 +78,14 @@ class DataStore(object):
         self.date = date
         self.root = root
         self._set_file_paths(expnum)
-        self.cortexlab_date = datetuple2cortexlab(date)
-
+        self.isoformat_date = datetuple2isoformat(date)
 
         year, month, day = date
         path_pattern = '{root}/{subject}/{year}-{month}-{day}/{expnum}/'
         path = path_pattern.format(root=root,
                                    year=year,
-                                   month='%02i'%month,
-                                   day='%02i'%day,
+                                   month='%02i' % month,
+                                   day='%02i' % day,
                                    expnum=expnum,
                                    subject=subject)
         self.__path__ = path
@@ -108,13 +109,13 @@ class DataStore(object):
         dtypes = ['Timeline']
 
         year, month, day = self.date
-        files = {dt : template.format(root=self.root,
-                                      year=year,
-                                      month='%02i'%month,
-                                      day='%02i'%day,
-                                      subject=self.subject,
-                                      expnum=self.expnum,
-                                      dtype=dt)
+        files = {dt: template.format(root=self.root,
+                                     year=year,
+                                     month='%02i' % month,
+                                     day='%02i' % day,
+                                     subject=self.subject,
+                                     expnum=self.expnum,
+                                     dtype=dt)
                  for dt in dtypes}
 
         # protocol_pattern = '{root}/{subject}/{year}-{month}-{day}/{expnum}/Protocol.mat'
@@ -143,10 +144,11 @@ class DataStore(object):
         '''
         items = os.listdir(os.path.join(self.root,
                                         self.subject,
-                                        self.cortexlab_date))
+                                        self.isoformat_date))
         # str_items = sorted([item for item in items if not can_int(item)])
-        int_items = sorted([int(item) for item in items if can_int(item) and int(item) < 1000])
-        return int_items # + str_items
+        int_items = sorted(
+            [int(item) for item in items if can_int(item) and int(item) < 1000])
+        return int_items  # + str_items
 
     def set_experiment(self, expnum):
         '''
@@ -158,24 +160,28 @@ class DataStore(object):
         '''
         from scipy import io as sio
         assert dtype in self.dtypes
-        dtype2keys = {'fus' : 'doppler',
-                      'Protocol' : 'Protocol',
-                      'Timeline' : 'Timeline',
+        dtype2keys = {'fus': 'doppler',
+                      'Protocol': 'Protocol',
+                      'Timeline': 'Timeline',
                       }
 
         if dtype not in dtype2keys:
-            raise IOError("Give info on how to load '%s':\n%s"%(dtype, self.files[dtype]))
+            raise IOError("Give info on how to load '%s':\n%s" %
+                          (dtype, self.files[dtype]))
 
         key = dtype2keys[dtype]
         try:
-            dat = sio.loadmat(self.files[dtype], struct_as_record=False, verify_compressed_data_integrity=False)[key][0,0]
+            dat = sio.loadmat(self.files[dtype], struct_as_record=False,
+                              verify_compressed_data_integrity=False)[key][0, 0]
         except OSError:
             # Assume I/O latency issues and try again
             import time
             nsec = np.random.rand()*5
             time.sleep(nsec)
-            dat = sio.loadmat(self.files[dtype], struct_as_record=False, verify_compressed_data_integrity=False)[key][0,0]
+            dat = sio.loadmat(self.files[dtype], struct_as_record=False,
+                              verify_compressed_data_integrity=False)[key][0, 0]
         return dat
+
 
 class ExperimentData(DataStore):
     def __init__(self, *args, **kwargs):
@@ -189,7 +195,7 @@ class ExperimentData(DataStore):
         '''
         '''
         timeline = self.load_data('Timeline')
-        HWEVENTS = [t.name[0] for t in timeline.hw[0,0].inputs[0]]
+        HWEVENTS = [t.name[0] for t in timeline.hw[0, 0].inputs[0]]
         self.hwevents = HWEVENTS
         self.timeline = timeline
 
@@ -201,11 +207,11 @@ class ExperimentData(DataStore):
         nstim, nreps = protocol.seqnums.shape
         self.nstimuli = nstim
         self.nrepeats = nreps
-        self.stimulus_sequence = protocol.seqnums - 1 # change to 0-index
+        self.stimulus_sequence = protocol.seqnums - 1  # change to 0-index
 
     @property
     def timeline_sample_ratehz(self):
-        sample_ratehz = float(1.0/self.timeline.hw[0,0].samplingInterval)
+        sample_ratehz = float(1.0/self.timeline.hw[0, 0].samplingInterval)
         return sample_ratehz
 
     def get_timeline_data(self, event_name):
@@ -225,10 +231,11 @@ class ExperimentData(DataStore):
         channel_index = self.hwevents.index('neuralFrames')
         ttl = self.timeline.rawDAQData[:, channel_index]
         nonzero = np.diff(ttl).nonzero()[0]
-        frame_times = self.timeline.rawDAQTimestamps[0,nonzero]
+        frame_times = self.timeline.rawDAQTimestamps[0, nonzero]
         # shift frame time to middle of acquisition
-        offset = 0 if shift==0 else 1.0/shift
-        fusi_times = (frame_times + self.nBFpframe/offset/self.bfrate).squeeze()
+        offset = 0 if shift == 0 else 1.0/shift
+        fusi_times = (frame_times + self.nBFpframe /
+                      offset/self.bfrate).squeeze()
         return fusi_times
 
     def load_doppler(self, trim_end=2):
@@ -238,7 +245,8 @@ class ExperimentData(DataStore):
         frames = doppler.frames
 
         # store sampling info
-        self.nBFpframe = 180.0 if not hasattr(doppler, 'nBFPerFrame') else doppler.nBFPerFrame
+        self.nBFpframe = 180.0 if not hasattr(
+            doppler, 'nBFPerFrame') else doppler.nBFPerFrame
         self.bfrate = 1.0/doppler.dtBF
 
         # get time stamps
@@ -261,39 +269,41 @@ class ExperimentData(DataStore):
         '''
         '''
         timeline = self.timeline
-        event_names = [t[0][0].split()[0] for t in timeline.mpepUDPEvents[:int(timeline.mpepUDPCount)]]
+        event_names = [t[0][0].split()[0]
+                       for t in timeline.mpepUDPEvents[:int(timeline.mpepUDPCount)]]
         # start and end events
-        start_idx = np.asarray([i for i,t in enumerate(event_names) if 'StimStart' == t])
-        end_idx = np.asarray([i for i,t in enumerate(event_names) if 'StimEnd' == t])
+        start_idx = np.asarray(
+            [i for i, t in enumerate(event_names) if 'StimStart' == t])
+        end_idx = np.asarray(
+            [i for i, t in enumerate(event_names) if 'StimEnd' == t])
         # start and end times
-        start_times = timeline.mpepUDPTimes[:int(timeline.mpepUDPCount)][start_idx].squeeze()
-        end_times = timeline.mpepUDPTimes[:int(timeline.mpepUDPCount)][end_idx].squeeze()
+        start_times = timeline.mpepUDPTimes[:int(
+            timeline.mpepUDPCount)][start_idx].squeeze()
+        end_times = timeline.mpepUDPTimes[:int(
+            timeline.mpepUDPCount)][end_idx].squeeze()
         self.stimulus_start_times = np.atleast_1d(start_times)
         self.stimulus_end_times = np.atleast_1d(end_times)
-
 
     def get_timeline_object(self):
         '''
         '''
         return self.timeline
 
-
     def load_photodiode_events(self, **kwargs):
         '''
         kwargs are passed to bandpass filter
         '''
-        assert 'photoDiode'in self.hwevents
+        assert 'photoDiode' in self.hwevents
         timeline = self.timeline
 
         channel_index = self.hwevents.index('photoDiode')
         phd = timeline.rawDAQData[:, channel_index]
-        sample_rate = float(1.0/timeline.hw[0,0].samplingInterval)
+        sample_rate = float(1.0/timeline.hw[0, 0].samplingInterval)
         self.photod_data = phd
         self.photod_samplerate = sample_rate
 
         fphd = band_pass_signal(phd, sample_rate, **kwargs)
         self.photod_fdata = fphd
-
 
     def load_photod_stimuli(self, daqtimes=None):
         '''
@@ -316,12 +326,13 @@ class ExperimentData(DataStore):
 
         phdabove = (phdfilt > threshold).astype(np.float32)
         phdtransitions = np.r_[[0], np.diff(phdabove)]
-        print ((phdtransitions == -1).sum())
+        print((phdtransitions == -1).sum())
 
         all_ups = daqtimes[phdtransitions == 1]
         all_downs = daqtimes[phdtransitions == -1]
 
-        raw_transitions = np.r_[[0], np.diff(((phd - phd.mean()) > threshold).astype(np.float32))]
+        raw_transitions = np.r_[[0], np.diff(
+            ((phd - phd.mean()) > threshold).astype(np.float32))]
         raw_ups = daqtimes[raw_transitions == 1]
         raw_downs = daqtimes[raw_transitions == -1]
 
@@ -333,9 +344,10 @@ class ExperimentData(DataStore):
         for stimidx, (onset, offset) in enumerate(zip(start_times, end_times)):
             first_up = raw_ups[raw_ups > onset][0] - filter_offset
             last_down = raw_downs[raw_downs < offset][-1] + filter_offset
-            if 0: print (stimidx, onset, first_up, last_down)
+            if 0:
+                print(stimidx, onset, first_up, last_down)
 
-            ### use filtered signals
+            # use filtered signals
             # find the first up event
             up_first_idx = (all_ups > first_up).nonzero()[0][0]
             # find the last down event
@@ -343,10 +355,11 @@ class ExperimentData(DataStore):
             # find the last up event
             up_last_idx = (all_ups < all_downs[down_last_idx]).nonzero()[0][-1]
             # find the first down event
-            down_first_idx = (all_downs > all_ups[up_first_idx]).nonzero()[0][0]
+            down_first_idx = (
+                all_downs > all_ups[up_first_idx]).nonzero()[0][0]
 
-            print (all_ups[up_first_idx], all_ups[up_last_idx])
-            print (all_downs[down_first_idx], all_downs[down_last_idx])
+            print(all_ups[up_first_idx], all_ups[up_last_idx])
+            print(all_downs[down_first_idx], all_downs[down_last_idx])
             print()
 
             # store the onset off-set times per stimulus
@@ -363,10 +376,11 @@ class ExperimentData(DataStore):
         # stimulus with frame vectors:
         # [(onset1, offset1), (onset2, offset2), ..., (onsetN, offsetN)]
         if phdtimes.ndim == 3:
-            stimulus_frame_times = np.sort(phdtimes.reshape(phdtimes.shape[0], -1), axis=-1)
+            stimulus_frame_times = np.sort(
+                phdtimes.reshape(phdtimes.shape[0], -1), axis=-1)
         else:
             stimulus_frame_times = []
-            for start_times,end_times in zip(phdtimes[:,0], phdtimes[:,1]):
+            for start_times, end_times in zip(phdtimes[:, 0], phdtimes[:, 1]):
                 vec = np.r_[start_times, end_times]
                 np.sort(vec)
                 stimulus_frame_times.append(vec)
@@ -375,23 +389,24 @@ class ExperimentData(DataStore):
         self.phd_frame_times = stimulus_frame_times[self.stimulus_sequence]
         self.phd_stim_start = stimuli_start[self.stimulus_sequence]
         self.phd_stim_end = stimuli_end[self.stimulus_sequence]
-        self.phd_raw = phdtimes[self.stimulus_sequence] # new
+        self.phd_raw = phdtimes[self.stimulus_sequence]  # new
 
     def set_frame_markers(self):
         '''
         '''
         import itertools
-        frame_markers = np.zeros((self.nstimuli, self.nrepeats, self.fusi_times.shape[0]))
+        frame_markers = np.zeros(
+            (self.nstimuli, self.nrepeats, self.fusi_times.shape[0]))
 
-        for idx, (sdx, rdx)  in enumerate(itertools.product(range(self.nstimuli), range(self.nrepeats))):
-            ontime = self.phd_stim_start[sdx,rdx]
-            offtime = self.phd_stim_end[sdx,rdx]
+        for idx, (sdx, rdx) in enumerate(itertools.product(range(self.nstimuli), range(self.nrepeats))):
+            ontime = self.phd_stim_start[sdx, rdx]
+            offtime = self.phd_stim_end[sdx, rdx]
             marker = np.logical_and(self.fusi_times < offtime,
                                     self.fusi_times > ontime)
-            print(np.asarray([idx, sdx, rdx, ontime, offtime, offtime-ontime, marker.sum()]))
+            print(np.asarray([idx, sdx, rdx, ontime,
+                  offtime, offtime-ontime, marker.sum()]))
             frame_markers[sdx, rdx, :] = marker
         self.stimulus_markers = frame_markers
-
 
 
 class StimulusInfo(DataStore):
@@ -399,12 +414,11 @@ class StimulusInfo(DataStore):
         super(StimulusInfo, self).__init__(*args, **kwargs)
         self.load_protocol()
 
-
     def load_timeline(self):
         '''
         '''
         timeline = self.load_data('Timeline')
-        HWEVENTS = [t.name[0] for t in timeline.hw[0,0].inputs[0]]
+        HWEVENTS = [t.name[0] for t in timeline.hw[0, 0].inputs[0]]
         self.hwevents = HWEVENTS
         self.timeline = timeline
 
@@ -419,8 +433,7 @@ class StimulusInfo(DataStore):
         self.nswipes = 6
         self.nstimuli = nstim
         self.nrepeats = nreps
-        self.stimulus_sequence = protocol.seqnums - 1 # change to 0-index
-
+        self.stimulus_sequence = protocol.seqnums - 1  # change to 0-index
 
     def load(self):
         self.load_software_times()
@@ -428,19 +441,23 @@ class StimulusInfo(DataStore):
         self.load_hardware_times()
         self.guess_swipe_stimulus_times()
 
-
     def load_software_times(self):
         '''Stimulus events from software
         '''
         self.load_timeline()
         timeline = self.timeline
-        event_names = [t[0][0].split()[0] for t in timeline.mpepUDPEvents[:int(timeline.mpepUDPCount)]]
+        event_names = [t[0][0].split()[0]
+                       for t in timeline.mpepUDPEvents[:int(timeline.mpepUDPCount)]]
         # start and end events
-        start_idx = np.asarray([i for i,t in enumerate(event_names) if 'StimStart' == t])
-        end_idx = np.asarray([i for i,t in enumerate(event_names) if 'StimEnd' == t])
+        start_idx = np.asarray(
+            [i for i, t in enumerate(event_names) if 'StimStart' == t])
+        end_idx = np.asarray(
+            [i for i, t in enumerate(event_names) if 'StimEnd' == t])
         # start and end times
-        start_times = timeline.mpepUDPTimes[:int(timeline.mpepUDPCount)][start_idx].squeeze()
-        end_times = timeline.mpepUDPTimes[:int(timeline.mpepUDPCount)][end_idx].squeeze()
+        start_times = timeline.mpepUDPTimes[:int(
+            timeline.mpepUDPCount)][start_idx].squeeze()
+        end_times = timeline.mpepUDPTimes[:int(
+            timeline.mpepUDPCount)][end_idx].squeeze()
 
         self.software_start_times = np.atleast_1d(start_times)
         self.software_end_times = np.atleast_1d(end_times)
@@ -449,18 +466,17 @@ class StimulusInfo(DataStore):
         '''
         kwargs are passed to bandpass filter
         '''
-        assert 'photoDiode'in self.hwevents
+        assert 'photoDiode' in self.hwevents
         timeline = self.timeline
 
         channel_index = self.hwevents.index('photoDiode')
         phd = timeline.rawDAQData[:, channel_index]
-        sample_rate = float(1.0/timeline.hw[0,0].samplingInterval)
+        sample_rate = float(1.0/timeline.hw[0, 0].samplingInterval)
         fphd = band_pass_signal(phd, sample_rate, **kwargs)
 
         self.photod_data = phd
         self.photod_samplerate = sample_rate
         self.photod_fdata = fphd
-
 
     def load_hardware_times(self):
         '''
@@ -485,21 +501,23 @@ class StimulusInfo(DataStore):
         all_ups = timeline.rawDAQTimestamps[0][phdtransitions == 1]
         all_downs = timeline.rawDAQTimestamps[0][phdtransitions == -1]
 
-        raw_transitions = np.r_[[0], np.diff(((phd - phd.mean()) > threshold).astype(np.float32))]
+        raw_transitions = np.r_[[0], np.diff(
+            ((phd - phd.mean()) > threshold).astype(np.float32))]
         raw_ups = timeline.rawDAQTimestamps[0][raw_transitions == 1]
         raw_downs = timeline.rawDAQTimestamps[0][raw_transitions == -1]
 
         # align stimuli to photodiode
         ##############################
-        filter_offset = (1./60) # 0.016
+        filter_offset = (1./60)  # 0.016
         phdtimes = []
 
         for stimidx, (onset, offset) in enumerate(zip(start_times, end_times)):
             first_up = raw_ups[raw_ups > onset][0] - filter_offset
             last_down = raw_downs[raw_downs < offset][-1] + filter_offset
-            if 0: print(stimidx, onset, first_up, last_down)
+            if 0:
+                print(stimidx, onset, first_up, last_down)
 
-            ### use filtered signals
+            # use filtered signals
             # find the first up event
             up_first_idx = (all_ups > first_up).nonzero()[0][0]
             # find the last down event
@@ -507,7 +525,8 @@ class StimulusInfo(DataStore):
             # find the last up event
             up_last_idx = (all_ups < all_downs[down_last_idx]).nonzero()[0][-1]
             # find the first down event
-            down_first_idx = (all_downs > all_ups[up_first_idx]).nonzero()[0][0]
+            down_first_idx = (
+                all_downs > all_ups[up_first_idx]).nonzero()[0][0]
 
             print(all_ups[up_first_idx], all_ups[up_last_idx])
             print(all_downs[down_first_idx], all_downs[down_last_idx])
@@ -527,10 +546,11 @@ class StimulusInfo(DataStore):
         # stimulus with frame vectors:
         # [(onset1, offset1), (onset2, offset2), ..., (onsetN, offsetN)]
         if phdtimes.ndim == 3:
-            stimulus_frame_times = np.sort(phdtimes.reshape(phdtimes.shape[0], -1), axis=-1)
+            stimulus_frame_times = np.sort(
+                phdtimes.reshape(phdtimes.shape[0], -1), axis=-1)
         else:
             stimulus_frame_times = []
-            for start_times,end_times in zip(phdtimes[:,0], phdtimes[:,1]):
+            for start_times, end_times in zip(phdtimes[:, 0], phdtimes[:, 1]):
                 vec = np.r_[start_times, end_times]
                 print(vec.shape, start_times.shape, end_times.shape)
                 vec = np.sort(vec)
@@ -543,40 +563,40 @@ class StimulusInfo(DataStore):
         self.phd_stim_end = stimuli_end[self.stimulus_sequence]
         self.phd_raw = phdtimes[self.stimulus_sequence]
 
-
         # get swipe events
         ##############################
         swipes = []
-        for idx, (sdx, rdx)  in enumerate(itertools.product(range(self.nstimuli), range(self.nrepeats))):
-            times = self.phd_raw[sdx,rdx]
+        for idx, (sdx, rdx) in enumerate(itertools.product(range(self.nstimuli), range(self.nrepeats))):
+            times = self.phd_raw[sdx, rdx]
             diff = times[1] - times[0]
             stats = np.asarray([diff.min(), diff.mean(), diff.max()])
-            print(idx, sdx, rdx, times[0].shape, times[1].shape, times[1][-1]-times[0][0], stats)
+            print(idx, sdx, rdx, times[0].shape,
+                  times[1].shape, times[1][-1]-times[0][0], stats)
             # nphotoevents = (self.frames_per_swipe*self.nswipes)/2
             times = np.r_[times[0], times[1]]
             times = np.sort(times)
             times = np.array_split(times, self.nswipes)
             # swipes
             swipes.append(times)
-        swipes = np.asarray(swipes).reshape(self.nstimuli, self.nrepeats,-1)
+        swipes = np.asarray(swipes).reshape(self.nstimuli, self.nrepeats, -1)
         self.phd_swipes = swipes
 
-
-
-
     def guess_swipe_stimulus_times(self, stimid=0):
-        swipes = np.zeros((self.nstimuli, self.nrepeats, self.nswipes, self.nframes_per_swipe))
-        for idx, (sdx, rdx)  in enumerate(itertools.product(range(self.nstimuli), range(self.nrepeats))):
-            times = self.phd_raw[sdx,rdx]
+        swipes = np.zeros((self.nstimuli, self.nrepeats,
+                          self.nswipes, self.nframes_per_swipe))
+        for idx, (sdx, rdx) in enumerate(itertools.product(range(self.nstimuli), range(self.nrepeats))):
+            times = self.phd_raw[sdx, rdx]
             diff = times[1] - times[0]
             stats = np.asarray([diff.min(), diff.mean(), diff.max()])
-            print(idx, sdx, rdx, times[0].shape, times[1].shape, times[1][-1]-times[0][0], stats)
+            print(idx, sdx, rdx, times[0].shape,
+                  times[1].shape, times[1][-1]-times[0][0], stats)
             # nphotoevents = (self.frames_per_swipe*self.nswipes)/2
-            times = np.arange(self.nframes_per_swipe*self.nswipes, dtype=np.float32)/self.monitor_fps + times[0][0]
+            times = np.arange(self.nframes_per_swipe*self.nswipes,
+                              dtype=np.float32)/self.monitor_fps + times[0][0]
             times = np.array_split(times, self.nswipes)
             # swipes
-            swipes[sdx,rdx] = times
-        swipes = np.asarray(swipes)#
+            swipes[sdx, rdx] = times
+        swipes = np.asarray(swipes)
         self.hardcoded_times = swipes
 
 

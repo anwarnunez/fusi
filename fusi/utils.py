@@ -20,14 +20,17 @@ def get_peak_info(time, data, sumfunc=np.median):
 
     peak_location = np.argmax(sumfunc(data, 0))
     peak_time = time[peak_location]
-    peak_width = signal.peak_widths(sumfunc(data, 0), [peak_location], rel_height=0.5)[0]
-    peak_fwhm = peak_width*0.3 # fUSI dt = 0.3 sec
+    peak_width = signal.peak_widths(
+        sumfunc(data, 0), [peak_location], rel_height=0.5)[0]
+    peak_fwhm = peak_width*0.3  # fUSI dt = 0.3 sec
     return peak_time, float(peak_fwhm)
+
 
 def summarize_peaks(time, data, **kwargs):
     '''
     '''
-    peak_time, peak_fwhm = np.asarray([get_peak_info(time, dat, **kwargs) for dat in data]).T
+    peak_time, peak_fwhm = np.asarray(
+        [get_peak_info(time, dat, **kwargs) for dat in data]).T
     return peak_time, peak_fwhm
 
 
@@ -122,7 +125,6 @@ def load_fusinpx_results(prefix='regression',
                                 verbose=verbose,
                                 do_loading=True, **kwargs))
 
-
         if len(res) > 0:
             res = [res_transform(t.squeeze()) for t in res]
             res = np.asarray(res) if flatten is False else np.hstack(res)
@@ -144,14 +146,14 @@ def load_fusinpx_results(prefix='regression',
                     raise ValueError('No time info found!')
 
     if len(results) == 0:
-        print('Nothing found: %s'%matcher, kwargs)
+        print('Nothing found: %s' % matcher, kwargs)
         return None, None
 
     if len(results) == 1:
         results = results[0]
     else:
-        results = np.vstack(results) if flatten is False else np.hstack(results)
-
+        results = np.vstack(
+            results) if flatten is False else np.hstack(results)
 
     # time-vector is the same for all
     if time is not None:
@@ -170,7 +172,7 @@ def glob_pattern(pattern,
                  stimulus_condition='*',
                  block_numbers=None,
                  results_version='results_v03',
-                 exclude_patterns=None, #[('2019-11-26', None)],
+                 exclude_patterns=None,  # [('2019-11-26', None)],
                  data_root=DATA_ROOT,
                  verbose=False,
                  probe_name=None,
@@ -194,25 +196,25 @@ def glob_pattern(pattern,
     '''
     from fusi.extras import readers
     from fusi import handler2 as handler
-    EXPERIMENTS = {'CR017' : ['2019-11-13','2019-11-14'],
-                   'CR020' : ['2019-11-20','2019-11-21', '2019-11-22'],
-                   'CR019' : ['2019-11-26','2019-11-27'],
-                   'CR022' : ['2020-10-07','2020-10-11'],
-                   'CR024' : ['2020-10-29']}
-
+    EXPERIMENTS = {'CR017': ['2019-11-13', '2019-11-14'],
+                   'CR020': ['2019-11-20', '2019-11-21', '2019-11-22'],
+                   'CR019': ['2019-11-26', '2019-11-27'],
+                   'CR022': ['2020-10-07', '2020-10-11'],
+                   'CR024': ['2020-10-29']}
 
     if stimulus_condition != '*':
-        assert stimulus_condition in ['kalatsky', 'checkerboard', 'spontaneous']
+        assert stimulus_condition in [
+            'kalatsky', 'checkerboard', 'spontaneous']
 
-    if subject=='*':
+    if subject == '*':
         # Use all subjects
         pass
     elif isinstance(subject, (list, str)):
         # select some subjects
-        EXPERIMENTS = {k : v for k,v in EXPERIMENTS.items() if k in subject}
+        EXPERIMENTS = {k: v for k, v in EXPERIMENTS.items() if k in subject}
 
     for sub, sessions in EXPERIMENTS.items():
-        if session=='*':
+        if session == '*':
             # Use all sesssions
             pass
         else:
@@ -236,10 +238,12 @@ def glob_pattern(pattern,
             # iterate thru matches
             for (fl, key) in matches:
                 if do_loading:
-                    if verbose: print('%s : %s'%(fl, key), sub, sess, stimulus_condition)
+                    if verbose:
+                        print('%s : %s' % (fl, key), sub,
+                              sess, stimulus_condition)
                     data = readers.hdf_load(fl, key, verbose=False)
                     if np.allclose(data, 0):
-                        print('Data is all zeros:',fl, key)
+                        print('Data is all zeros:', fl, key)
                     yield data
                 else:
                     yield fl, key
@@ -272,40 +276,41 @@ def glob_local(pattern,
     path = Path(data_root).joinpath(subject, session, results_version)
     files = path.glob(pattern)
 
-    for fl in  files:
+    for fl in files:
         contents = readers.hdf_load(fl, verbose=False)
-        block_mapper = {int(t.split('_')[1].strip('block')) : t for t in contents}
+        block_mapper = {
+            int(t.split('_')[1].strip('block')): t for t in contents}
         if block_numbers is not None:
             # In case we want to restrict to a subset of blocks
             block_mapper = [b for b in block_mapper if b in block_numbers]
 
         if analysis_valid_only:
-            block_mapper = {k : v  for k,v in block_mapper.items() if k in handler.MetaSession(subject, session, verbose=False).analysis_blocks}
+            block_mapper = {k: v for k, v in block_mapper.items() if k in handler.MetaSession(
+                subject, session, verbose=False).analysis_blocks}
 
-        if stimulus_condition is not None and stimulus_condition!='*':
-            block_mapper = {blk_number: key for idx,(blk_number,key) in enumerate(block_mapper.items()) \
-                if handler.MetaBlock(subject, session, blk_number, verbose=False).task_name==stimulus_condition}
+        if stimulus_condition is not None and stimulus_condition != '*':
+            block_mapper = {blk_number: key for idx, (blk_number, key) in enumerate(block_mapper.items())
+                            if handler.MetaBlock(subject, session, blk_number, verbose=False).task_name == stimulus_condition}
 
         if area_name is not None and area_name != '*':
             assert probe_name is not None
-            block_mapper = {blk_number: key for idx,(blk_number,key) in enumerate(block_mapper.items()) \
-                if (handler.MetaBlock(subject, session, blk_number,verbose=False).fusi_get_probe_allen_mask(
-                        probe_name, allen_area_name=area_name) is not None)}
+            block_mapper = {blk_number: key for idx, (blk_number, key) in enumerate(block_mapper.items())
+                            if (handler.MetaBlock(subject, session, blk_number, verbose=False).fusi_get_probe_allen_mask(
+                                probe_name, allen_area_name=area_name) is not None)}
 
         for block_number, block_key in sorted(block_mapper.items()):
             if exclude_patterns is not None:
                 is_valid = True
                 for exclude_fl, exclude_key in exclude_patterns:
                     if (exclude_fl in str(fl)) and (str(exclude_key) in block_key):
-                        if verbose: print('Skipping:', exclude_fl, exclude_key)
+                        if verbose:
+                            print('Skipping:', exclude_fl, exclude_key)
                         is_valid = False
                         continue
                 if is_valid:
                     yield fl, block_key
             else:
                 yield fl, block_key
-
-
 
 
 def roiwise_pctsignalchange(data,
@@ -325,8 +330,10 @@ def roiwise_pctsignalchange(data,
     data = np.clip(data, -75, 75)
     return data
 
+
 def pixelwise_pctsignalchange_median(data, **kwargs):
     return pixelwise_pctsignalchange(data, normfunc=np.median, **kwargs)
+
 
 def pixelwise_pctsignalchange(data,
                               population_mean=False,
@@ -402,6 +409,7 @@ def fast_find_between(continuous_times, discrete_times, window=0.050):
     >>> markers = fast_find_times_between(times, new_times, window=1./new_ratehz)
     '''
     from fusi import mp
+
     def find_between(vec, before, window=0.050):
         '''
         '''
@@ -414,7 +422,7 @@ def fast_find_between(continuous_times, discrete_times, window=0.050):
         # matches = greater[vec[greater] < (before + window)]
         return matches
 
-    func = lambda x: find_between(continuous_times, x, window=window)
+    def func(x): return find_between(continuous_times, x, window=window)
     res = mp.map(func, discrete_times, procs=10)
     return res
 
@@ -435,10 +443,13 @@ def spikes_at_times(event_times, post_event_time,
     sparse_spike_matrix = sparse.csr_matrix((np.ones_like(spike_times),
                                              (np.arange(len(spike_times)), spike_clusters)),
                                             shape, dtype=np.bool)
-    spike_bins = fast_find_between(spike_times, event_times, window=post_event_time)
+    spike_bins = fast_find_between(
+        spike_times, event_times, window=post_event_time)
 
-    func = lambda x: np.asarray(sparse_spike_matrix[x]) # spike counter function
-    spike_matrix = np.asarray(parallelmap(func, spike_bins, procs=10)).squeeze()
+    def func(x): return np.asarray(
+        sparse_spike_matrix[x])  # spike counter function
+    spike_matrix = np.asarray(parallelmap(
+        func, spike_bins, procs=10)).squeeze()
 
     return spike_matrix
 
@@ -455,7 +466,7 @@ def sparse_spike_matrix(spike_times, spike_clusters, nclusters=None):
     shape = (len(spike_times), nclusters)
     sparse_spike_matrix = sparse.csr_matrix((np.ones_like(spike_times),
                                              (np.arange(len(spike_times)), spike_clusters)),
-                                             shape, dtype=np.bool)
+                                            shape, dtype=np.bool)
     return sparse_spike_matrix
 
 
@@ -532,7 +543,8 @@ def bin_spikes_turbo(window,
     unique_bins = np.unique(spike_bins)
     spike_matrix = np.zeros((nbins, nclusters), dtype=np.int32)
 
-    func = lambda uqbin: np.asarray(sparse_spike_matrix[spike_bins==uqbin,:].sum(0)).squeeze()
+    def func(uqbin): return np.asarray(
+        sparse_spike_matrix[spike_bins == uqbin, :].sum(0)).squeeze()
     spike_counts = parallelmap(func, unique_bins)
     for idx, scount in zip(unique_bins, spike_counts):
         spike_matrix[int(idx)] = scount
@@ -542,6 +554,7 @@ def bin_spikes_turbo(window,
 
 class Bunch(dict):
     """A subclass of dictionary with an additional dot syntax."""
+
     def __init__(self, *args, **kwargs):
         super(Bunch, self).__init__(*args, **kwargs)
         self.__dict__ = self
@@ -559,13 +572,13 @@ def mk_log_fusi(raw_mean_image):
     img = np.log(img + 1)
     return img
 
+
 def brain_mask(raw_mean_image):
     '''
     '''
     from skimage.filters import threshold_otsu
 
-
-    thresh  = threshold_otsu(img)
+    thresh = threshold_otsu(img)
     binary = img > thresh
     return binary
 
@@ -573,7 +586,7 @@ def brain_mask(raw_mean_image):
 def cvridge_nodelays(Xfull, Yfull,
                      Xtest=None,
                      Ytest=None,
-                     ridges=np.logspace(0,3,10), chunklen=10,
+                     ridges=np.logspace(0, 3, 10), chunklen=10,
                      metric='rsquared', population_optimal=False, delays_mean=True,
                      performance=True, weights=False, predictions=False, verbose=2):
     '''
@@ -590,31 +603,31 @@ def cvridge_nodelays(Xfull, Yfull,
     temporal_prior = temporal_priors.SphericalPrior(delays=[0])
 
     fit_spherical = models.estimate_stem_wmvnp([Xtrain], Ytrain,
-                                               [Xtest],Ytest,
+                                               [Xtest], Ytest,
                                                feature_priors=[feature_prior],
                                                temporal_prior=temporal_prior,
                                                ridges=ridges,
-                                               folds=(2,5),
+                                               folds=(2, 5),
                                                verbosity=verbose,
                                                performance=performance,
                                                weights=weights,
                                                predictions=predictions,
-                                               population_optimal=population_optimal, # pop opt is more stable
+                                               population_optimal=population_optimal,  # pop opt is more stable
                                                metric=metric,
-                                               chunklen=chunklen) # correlation is more stable
+                                               chunklen=chunklen)  # correlation is more stable
 
     if weights is True:
         kernel_weights = np.nan_to_num(fit_spherical['weights'])
         voxels_ridge = fit_spherical['optima'][:, -1]
         weights_mean = models.dual2primal_weights_banded(kernel_weights,
                                                          Xtrain,
-                                                         np.ones_like(voxels_ridge),
+                                                         np.ones_like(
+                                                             voxels_ridge),
                                                          temporal_prior,
                                                          delays_mean=delays_mean,
                                                          verbose=True)
         fit_spherical['weights'] = weights_mean
     return fit_spherical
-
 
 
 def generate_bootstrap_samples(data_size, subsample_size=100,
@@ -643,10 +656,9 @@ def generate_bootstrap_samples(data_size, subsample_size=100,
         indices = np.arange(start, data_size, dtype=dtype)
         splits = np.array_split(indices, nsplits)
         # gidx = sorted(np.random.permutation(nsplits)[:nchunks]) # w/o replacement
-        gidx = np.random.randint(0, nsplits, size=nchunks) # w/ replacement
+        gidx = np.random.randint(0, nsplits, size=nchunks)  # w/ replacement
         sample = np.hstack([splits[t] for t in gidx])
         yield sample
-
 
 
 def bootstrap_ols_fit(xtrain, ytrain, bootsamples,
@@ -657,7 +669,8 @@ def bootstrap_ols_fit(xtrain, ytrain, bootsamples,
     if include_constant:
         xtrain = np.hstack([np.ones((xtrain.shape[0], 1), dtype=xtrain.dtype),
                             xtrain])
-    boot_weights = np.zeros((nboot, xtrain.shape[1], ytrain.shape[1]), dtype=xtrain.dtype)
+    boot_weights = np.zeros(
+        (nboot, xtrain.shape[1], ytrain.shape[1]), dtype=xtrain.dtype)
     for bdx, samplesidx in enumerate(bootsamples):
         bhat = models.ols(xtrain[samplesidx], ytrain[samplesidx])
         boot_weights[bdx] = bhat
@@ -674,7 +687,8 @@ def bootstrap_sta_fit(xtrain, ytrain, bootsamples,
     if include_constant:
         xtrain = np.hstack([np.ones((xtrain.shape[0], 1), dtype=xtrain.dtype),
                             xtrain])
-    boot_weights = np.zeros((nboot, xtrain.shape[1], ytrain.shape[1]), dtype=xtrain.dtype)
+    boot_weights = np.zeros(
+        (nboot, xtrain.shape[1], ytrain.shape[1]), dtype=xtrain.dtype)
     for bdx, samplesidx in enumerate(bootsamples):
         bhat = np.dot(xtrain[samplesidx].T, ytrain[samplesidx])/len(samplesidx)
         boot_weights[bdx] = bhat
@@ -683,19 +697,19 @@ def bootstrap_sta_fit(xtrain, ytrain, bootsamples,
     return boot_weights
 
 
-
 def bootstrap_ridge_fit(xtrain, ytrain, bootsamples,
                         include_constant=False,
-                        ridges=np.logspace(0,4,10)):
+                        ridges=np.logspace(0, 4, 10)):
     '''bootstrap the bhat estimate with OLS
     '''
     nboot = len(bootsamples)
     if include_constant:
         xtrain = np.hstack([np.ones((xtrain.shape[0], 1), dtype=xtrain.dtype),
                             xtrain])
-    boot_weights = np.zeros((nboot, xtrain.shape[1], ytrain.shape[1]), dtype=xtrain.dtype)
+    boot_weights = np.zeros(
+        (nboot, xtrain.shape[1], ytrain.shape[1]), dtype=xtrain.dtype)
     solver = models.solve_l2_primal if xtrain.shape[0] > xtrain.shape[1] \
-             else models.solve_l2_dual
+        else models.solve_l2_dual
 
     for bdx, samplesidx in enumerate(bootsamples):
         fit = solver(xtrain[samplesidx], ytrain[samplesidx],
@@ -777,28 +791,31 @@ def temporal_filter(fusi, window_size=5,
     ----------
     fusi (ntimepoints, voxels): np.ndarray
     '''
-    assert ftype in ['median', 'sg', 'ma', 'macausal','bandpass']
+    assert ftype in ['median', 'sg', 'ma', 'macausal', 'bandpass']
     if fusi.ndim == 1:
-        fusi = fusi[...,None]
+        fusi = fusi[..., None]
     fusi_filt = np.zeros_like(fusi)
     for chidx in range(fusi.shape[1]):
-        pixel_data = fusi[:, chidx] #.copy()
+        pixel_data = fusi[:, chidx]  # .copy()
         pixel_mean = pixel_data.mean()
         pixel_data = pixel_data - pixel_mean
         if ftype == 'median':
             temporal_filter = signal.medfilt(pixel_data, window_size)
         elif ftype == 'sg':
-            polyorder = 3 if 'polyorder' not in fkwargs else fkwargs.pop('polyorder')
+            polyorder = 3 if 'polyorder' not in fkwargs else fkwargs.pop(
+                'polyorder')
             temporal_filter = signal.savgol_filter(pixel_data,
                                                    window_size,
                                                    polyorder,
                                                    **fkwargs)
         elif ftype == 'ma':
             delays = range(-window_size, window_size+1)
-            temporal_filter = tikutils.delay_signal(pixel_data, delays).mean(-1)
+            temporal_filter = tikutils.delay_signal(
+                pixel_data, delays).mean(-1)
         elif ftype == 'macausal':
             delays = range(window_size+1)
-            temporal_filter = tikutils.delay_signal(pixel_data, delays).mean(-1)
+            temporal_filter = tikutils.delay_signal(
+                pixel_data, delays).mean(-1)
         elif ftype == 'bandpass':
             temporal_filter = band_pass_signal(pixel_data, **kwargs)
 
@@ -806,7 +823,8 @@ def temporal_filter(fusi, window_size=5,
         new_signal = (pixel_data - temporal_filter) + pixel_mean
         fusi_filt[:, chidx] = new_signal
         if chidx % 1000 == 0:
-            print(ftype, window_size, chidx, new_signal.sum(), pixel_mean, fkwargs)
+            print(ftype, window_size, chidx,
+                  new_signal.sum(), pixel_mean, fkwargs)
     return fusi_filt
 
 
@@ -822,16 +840,15 @@ def get_centered_samples(data, outsamples):
     return newdata
 
 
-
 def get_temporal_filters(fusi, window_size=5,
                          ftype='median', **fkwargs):
     '''fusi (ntimepoints, pixels)
 
     estimates and returns a filter
     '''
-    assert ftype in ['median', 'sg', 'ma', 'macausal','bandpass']
+    assert ftype in ['median', 'sg', 'ma', 'macausal', 'bandpass']
     if fusi.ndim == 1:
-        fusi = fusi[...,None]
+        fusi = fusi[..., None]
     fusi_filt = np.zeros_like(fusi)
     for chidx in range(fusi.shape[1]):
         pixel_data = fusi[:, chidx].copy()
@@ -840,17 +857,20 @@ def get_temporal_filters(fusi, window_size=5,
         if ftype == 'median':
             temporal_filter = signal.medfilt(pixel_data, window_size)
         elif ftype == 'sg':
-            polyorder = 3 if 'polyorder' not in fkwargs else fkwargs.pop('polyorder')
+            polyorder = 3 if 'polyorder' not in fkwargs else fkwargs.pop(
+                'polyorder')
             temporal_filter = signal.savgol_filter(pixel_data,
                                                    window_size,
                                                    polyorder,
                                                    **fkwargs)
         elif ftype == 'ma':
             delays = range(-window_size, window_size+1)
-            temporal_filter = tikutils.delay_signal(pixel_data, delays).mean(-1)
+            temporal_filter = tikutils.delay_signal(
+                pixel_data, delays).mean(-1)
         elif ftype == 'macausal':
             delays = range(window_size+1)
-            temporal_filter = tikutils.delay_signal(pixel_data, delays).mean(-1)
+            temporal_filter = tikutils.delay_signal(
+                pixel_data, delays).mean(-1)
         elif ftype == 'bandpass':
             temporal_filter = band_pass_signal(pixel_data, **fkwargs)
 
@@ -858,7 +878,8 @@ def get_temporal_filters(fusi, window_size=5,
         new_signal = temporal_filter + pixel_mean
         fusi_filt[:, chidx] = new_signal
         if chidx % 1000 == 0:
-            print(ftype, window_size, chidx, new_signal.sum(), pixel_mean, fkwargs)
+            print(ftype, window_size, chidx,
+                  new_signal.sum(), pixel_mean, fkwargs)
     return fusi_filt.squeeze()
 
 
@@ -887,7 +908,7 @@ def autocorr(y, yy=None, nlags=1):
     assert yy.ndim == 1
 
     acorr = np.correlate(y, yy, 'same')
-    acorr /= acorr.max() # normalized
+    acorr /= acorr.max()  # normalized
     n = int(acorr.shape[0]/2)
     # lags = np.arange(acorr.shape[0]) - n
     # return acorr[np.where(np.logical_and(lags >= 0, lags <= nlags))]
@@ -924,8 +945,6 @@ def band_pass_signal(data, sample_rate=1.0, ntaps=5, cutoff=[24.0, 48.0]):
     return fsignal
 
 
-
-
 def mean_angle(ffts, metric=np.mean):
     '''
     '''
@@ -933,7 +952,7 @@ def mean_angle(ffts, metric=np.mean):
     ffts = np.asarray(ffts).mean(0)
 
     for fft in ffts:
-        phase =  metric(np.angle(fft), 0)
+        phase = metric(np.angle(fft), 0)
         # map -pi:pi to 0:2pi range
         phase = np.where(phase < 0, 2.0*np.pi + phase, phase)
         degrees += np.rad2deg(phase)/len(ffts)
@@ -943,15 +962,17 @@ def mean_angle(ffts, metric=np.mean):
 class StopWatch(object):
     '''Duration lapsed since last call
     '''
+
     def __init__(self, verbose=True):
         self.start = time.time()
         self.verbose = verbose
+
     def __call__(self):
         now = time.time()
         dur = now - self.start
         self.start = now
         if self.verbose:
-            print('Duration: %0.2f[sec]:'%dur)
+            print('Duration: %0.2f[sec]:' % dur)
         return dur
 
 
@@ -963,6 +984,7 @@ def hex2rgba(h):
 
 
 chronometer = StopWatch()
+
 
 def tiff2arr(fl, verbose=True):
     '''Convert a TIFF image to an array
@@ -1000,8 +1022,8 @@ def lanczosfun(cutoff, t, window=3):
     """
     t = np.atleast_1d(t * cutoff)
     val = window * np.sin(np.pi*t) * np.sin(np.pi*t/window) / (np.pi**2 * t**2)
-    val[t==0] = 1.0
-    val[np.abs(t)>window] = 0.0
+    val[t == 0] = 1.0
+    val[np.abs(t) > window] = 0.0
     return val
 
 
@@ -1019,12 +1041,13 @@ def lanczosinterp2D(data, oldtime, newtime, window=3, cutoff=1.0, rectify=False)
     """
     ## Find the cutoff frequency ##
     #cutoff = 1/np.mean(np.diff(newtime)) * cutoff_mult
-    print ("Doing lanczos interpolation with cutoff=%0.3f and %d lobes." % (cutoff, window))
+    print("Doing lanczos interpolation with cutoff=%0.3f and %d lobes." %
+          (cutoff, window))
 
     ## Build up sinc matrix ##
     sincmat = np.zeros((len(newtime), len(oldtime)), dtype=np.float32)
     for ndi in range(len(newtime)):
-        sincmat[ndi,:] = lanczosfun(cutoff, newtime[ndi]-oldtime, window)
+        sincmat[ndi, :] = lanczosfun(cutoff, newtime[ndi]-oldtime, window)
 
     if rectify:
         newdata = np.hstack([np.dot(sincmat, np.clip(data, -np.inf, 0)),

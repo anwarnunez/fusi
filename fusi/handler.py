@@ -23,7 +23,7 @@ from fusi.extras import stats
 from fusi.extras import readers
 
 
-def date2cortexlab(date_tuple):
+def date2isoformat(date_tuple):
     dateob = datetime.datetime.strptime(str(date_tuple),
                                         '(%Y, %m, %d)')
 
@@ -799,7 +799,8 @@ class SimultaneousfUSiNeuropixels(object):
         '''
         '''
         from fusi.config import DATA_ROOT
-        pattern = DATA_ROOT + '/{subject}/{year}-{month}-{day}/{session_oneidx}'
+        pattern = DATA_ROOT + \
+            '/{subject}/{year}-{month}-{day}/{session_oneidx}'
         root = pattern.format(subject=self.subject_name,
                               year=self.dateob.year,
                               month='%02i' % self.dateob.month,
@@ -1141,4 +1142,3 @@ def get_sessions(subject, year, month, day, root=None, matcher='*'):
     path = os.path.join(root, subject, date)
     sessions = glob(os.path.join(path, matcher))
     return sessions
-

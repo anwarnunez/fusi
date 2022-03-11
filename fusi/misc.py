@@ -15,12 +15,12 @@ import urllib
 from datetime import datetime
 
 
-
 class DotDict(dict):
     '''A subclass of dictionary with an additional dot syntax.
 
     Code copied from pykilosort2 (`Bunch`)
     '''
+
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
         self.__dict__ = self
@@ -55,50 +55,54 @@ def date_tuple2yyyymmdd(date_tuple):
     '''(2020, 1, 31) -> ('2020', '01', '31')
     '''
     dateob = datetime.strptime(str(date_tuple),
-                                        '(%Y, %m, %d)')
+                               '(%Y, %m, %d)')
     ymd = (dateob.year, dateob.month, dateob.day)
-    date = '%04i,%02i,%02i'%ymd
+    date = '%04i,%02i,%02i' % ymd
     return date.split(',')
 
-def date_cortexlab2sensible(date_string):
+
+def date_isoformat2sensible(date_string):
     '''
     '''
-    tup = date_cortexlab2tuple(date_string)
+    tup = date_isoformat2tuple(date_string)
     sens = date_tuple2sensible(tup)
     return sens
 
 
-def date_tuple2cortexlab(date_tuple):
+def date_tuple2isoformat(date_tuple):
     '''(2020, 1, 31) -> '2020-01-31'
     '''
     dateob = datetime.strptime(str(date_tuple),
-                                        '(%Y, %m, %d)')
+                               '(%Y, %m, %d)')
 
     ymd = (dateob.year, dateob.month, dateob.day)
-    date = '%04i-%02i-%02i'%ymd
+    date = '%04i-%02i-%02i' % ymd
     return date
+
 
 def date_tuple2sensible(date_tuple):
     '''(2020, 1, 31) -> '20200131'
     '''
     dateob = datetime.strptime(str(date_tuple),
-                                        '(%Y, %m, %d)')
+                               '(%Y, %m, %d)')
 
     ymd = (dateob.year, dateob.month, dateob.day)
-    date = '%04i%02i%02i'%ymd
+    date = '%04i%02i%02i' % ymd
     return date
+
 
 def date_tuple2number(date_tuple):
     '''(2020, 1, 31) -> 20200131 # INT data-type
     '''
     dateob = datetime.strptime(str(date_tuple),
-                                        '(%Y, %m, %d)')
+                               '(%Y, %m, %d)')
     ymd = (dateob.year, dateob.month, dateob.day)
-    date = '%04i%02i%02i'%ymd
+    date = '%04i%02i%02i' % ymd
     date = int(date)
     return date
 
-def date_cortexlab2tuple(datestring):
+
+def date_isoformat2tuple(datestring):
     '''
     '2019-01-31' -> (2019, 1, 13)
     '2019-1-31' -> (2019, 1, 13)
@@ -108,6 +112,7 @@ def date_cortexlab2tuple(datestring):
                                '%Y-%m-%d')
     time_tuple = dateob.timetuple()
     return time_tuple[:3]
+
 
 def date_number2tuple(datestring):
     '''20191231 -> (2019,12,13)
@@ -129,7 +134,8 @@ def date_sensible2tuple(ymd):
     time_tuple = dateob.timetuple()
     return time_tuple[:3]
 
-def date_cortexlab2dateob(datestring):
+
+def date_isoformat2dateob(datestring):
     '''
     '''
     assert isinstance(datestring, str)
@@ -151,6 +157,7 @@ def str2bool(string):
     val = None if string in ['None', 'none'] else val
     return val
 
+
 def can_float(string):
     try:
         value = float(string)
@@ -158,6 +165,7 @@ def can_float(string):
     except:
         # we can't even float
         return False
+
 
 def can_int(string):
     if not can_float(string):
@@ -170,10 +178,12 @@ def can_int(string):
     # should be the same if int
     return float(string) == int(string)
 
+
 def can_list(string):
     # must have comma separation
     ans = ',' in string
     return ans
+
 
 def can_bool(string):
     '''Test whether `string` can map to `bool`
@@ -182,6 +192,7 @@ def can_bool(string):
                   'False', 'false',
                   'None', 'none']
     return string in booleables
+
 
 def str2type(string):
     '''Convert string to correct data type.
@@ -207,6 +218,7 @@ def str2type(string):
     else:
         value = clean_string
     return value
+
 
 def convert_string2data(string):
     '''Convert string to correct data type.
@@ -242,6 +254,7 @@ def convert_string2data(string):
 ##############################
 # URI paths
 ##############################
+
 
 def uri_convert_uri2local(uripath):
     '''
@@ -307,9 +320,9 @@ def uri_convert_local2uri(local_path, scheme='smb'):
                           path=path)
 
 
-def cortexlab_subject_localpath(subject,
+def isoformat_subject_localpath(subject,
                                 server='server.domain.com',
                                 share='Subjects'):
-    uri = 'smb://{}/{}/{}'.format(server,share,subject)
+    uri = 'smb://{}/{}/{}'.format(server, share, subject)
     local_path = uri_convert_uri2local(uri)
     return local_path

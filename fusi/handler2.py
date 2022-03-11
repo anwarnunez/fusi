@@ -46,7 +46,7 @@ def params2cache(kwargs):
 
 EXPERIMENTS = [('CR017', (2019, 11, 13)),
                ('CR017', (2019, 11, 14)),
-               ('CR019', (2019, 11, 26)), 
+               ('CR019', (2019, 11, 26)),
                ('CR019', (2019, 11, 27)),
                ('CR020', (2019, 11, 20)),
                ('CR020', (2019, 11, 21)),
@@ -402,8 +402,8 @@ class MetaSession(object):
 
         return fusi_times, fusi_data
 
-    def cortexlab_mk_filename(self, filename, subfolder=None, mkdir=False):
-        date_txt = misc.date_tuple2cortexlab(self.date_tuple)
+    def mk_filename_for_localdb(self, filename, subfolder=None, mkdir=False):
+        date_txt = misc.date_tuple2isoformat(self.date_tuple)
         flname = '{date}_{subject}_{fl}'.format(date=date_txt,
                                                 subject=self.subject_name,
                                                 fl=filename)
@@ -426,7 +426,7 @@ class MetaSession(object):
 
     @property
     def date_tuple(self):
-        date = misc.date_cortexlab2tuple(self.session_name)
+        date = misc.date_isoformat2tuple(self.session_name)
         return date
 
     @property
@@ -617,8 +617,8 @@ class MetaSession(object):
         if verbose > 1:
             pprint(localizer_info)
         localizer_subfolder = str(localizer_info['folder_name'])
-        flname = self.cortexlab_mk_filename(roi_file_name,
-                                            subfolder=localizer_subfolder)
+        flname = self.mk_filename_for_localdb(roi_file_name,
+                                              subfolder=localizer_subfolder)
         mask = hdf_load(str(flname), 'mask', verbose=verbose > 1)
         if verbose:
             print('fUSi probe ROI voxels: %i' % mask.sum())
@@ -743,8 +743,8 @@ class MetaSession(object):
         '''
         import nibabel as nib
 
-        fl_resampled_atlas = self.cortexlab_mk_filename('alleccf_atlas_resampled_fusi_scaled%02ix_byindex.nii.gz' % scale_factor,
-                                                        'allenccf_align')
+        fl_resampled_atlas = self.mk_filename_for_localdb('alleccf_atlas_resampled_fusi_scaled%02ix_byindex.nii.gz' % scale_factor,
+                                                          'allenccf_align')
         im = nib.load(fl_resampled_atlas)
         return np.asarray(im.get_fdata())
 
@@ -903,8 +903,8 @@ class MetaSession(object):
         '''
         import nibabel as nib
         # load volume
-        volfl = self.cortexlab_mk_filename('estimated_%s_3Dtrack_%s.nii.gz' % (probe_name, estimate_type),
-                                           'allenccf_align')
+        volfl = self.mk_filename_for_localdb('estimated_%s_3Dtrack_%s.nii.gz' % (probe_name, estimate_type),
+                                             'allenccf_align')
         assert pathlib.Path(volfl).exists()
         vol = nib.load(volfl)
         return vol
@@ -912,8 +912,8 @@ class MetaSession(object):
     def fusi_get_probedepth_from_volume(self, probe_name, estimate_type='manual'):
         '''
         '''
-        fl = self.cortexlab_mk_filename('estimated_%s_3Dtrack_%s.hdf' % (probe_name, estimate_type),
-                                        'allenccf_align')
+        fl = self.mk_filename_for_localdb('estimated_%s_3Dtrack_%s.hdf' % (probe_name, estimate_type),
+                                          'allenccf_align')
         xyzmm = readers.hdf_load(fl, 'probe_tip_mm', verbose=self.verbose)
         probe_depth = np.sqrt(np.sum(xyzmm**2))
         return probe_depth
@@ -1155,7 +1155,8 @@ class MetaSession(object):
         '''
         '''
         for block_number in self.analysis_blocks:
-            block = MetaBlock(self.subject_name, self.session_name, block_number, verbose=self.verbose)
+            block = MetaBlock(self.subject_name, self.session_name,
+                              block_number, verbose=self.verbose)
             if block.task_name in ('spontaneous', 'checkerboard'):
                 yield block
 
@@ -1634,7 +1635,7 @@ class MetaBlock(MetaSession):
     def stimulus_load_times(self):
         timeline_aligned = self.timeline_get_aligned_times()
         # load timeline
-        self.cortexlab_timeline_load_block()
+        self.localdb_timeline_load_block()
         # get stimulus times
         self.timeline.load_photod_stimuli(timeline_aligned)
         stimulus_frame_times = self.timeline.phd_frame_times.copy()
@@ -1678,8 +1679,8 @@ class MetaBlock(MetaSession):
                                    zip(stimulus_start_times[:, ::2].T, stimulus_start_times[:, 1::2][::-1].T)]).T
         return repeat_times, repeat_ids
 
-    def cortexlab_mk_filename(self, filename, subfolder=None, mkdir=False):
-        date_txt = misc.date_tuple2cortexlab(self.date_tuple)
+    def mk_filename_for_localdb(self, filename, subfolder=None, mkdir=False):
+        date_txt = misc.date_tuple2isoformat(self.date_tuple)
         flname = '{date}_{block}_{subject}_{fl}'.format(date=date_txt,
                                                         block=self.block_name,
                                                         subject=self.subject_name,
@@ -1761,13 +1762,13 @@ class MetaBlock(MetaSession):
 
         setattr(self, probe_name, dotdict)
 
-    def cortexlab_timeline_load_block(self):
+    def localdb_timeline_load_block(self):
         '''
         '''
         timeline = righw.ExperimentData(self.subject_name,
-                                           expnum=int(self.block_name),
-                                           date=self.date_tuple,
-                                           root=self.root.parent)
+                                        expnum=int(self.block_name),
+                                        date=self.date_tuple,
+                                        root=self.root.parent)
         setattr(self, 'timeline', timeline)
 
     def fusi_get_slice_probedepth_and_voxels(self,
@@ -1864,7 +1865,7 @@ class MetaBlock(MetaSession):
     def fusi_get_outsidebrain_mask(self, verbose=False):
         '''
         '''
-        fl = self.cortexlab_mk_filename(
+        fl = self.mk_filename_for_localdb(
             'fusi_outsidebrain_roi.hdf', subfolder='fusi')
         mask = hdf_load(str(fl), 'outsidebrain_mask', verbose=verbose)
         return mask.astype(np.bool)
@@ -1891,7 +1892,7 @@ class MetaBlock(MetaSession):
     def fusi_get_midline_mask(self):
         '''
         '''
-        fl = self.cortexlab_mk_filename(
+        fl = self.mk_filename_for_localdb(
             'fusi_midline_roi.hdf', subfolder='fusi')
         # name was saved incorrectly =S
         mask = hdf_load(str(fl), 'outsidebrain_mask')
@@ -1907,7 +1908,7 @@ class MetaBlock(MetaSession):
         from fusi.io import contacq
         dataroot = pathlib.Path(dataroot)
         data_path = dataroot.joinpath(self.subject_name,
-                                      misc.date_tuple2cortexlab(
+                                      misc.date_tuple2isoformat(
                                           self.date_tuple),
                                       self.block_name)
         fusi_loader = contacq.MetaLoader(
@@ -1966,8 +1967,8 @@ class MetaBlock(MetaSession):
             pprint(localizer_info)
 
         localizer_subfolder = str(localizer_info['folder_name'])
-        mask_flname = super(type(self), self).cortexlab_mk_filename(roi_file_name,
-                                                                    subfolder=localizer_subfolder)
+        mask_flname = super(type(self), self).mk_filename_for_localdb(roi_file_name,
+                                                                      subfolder=localizer_subfolder)
 
         # return mask_flname
         mask = hdf_load(str(mask_flname), 'mask', verbose=verbose)
@@ -1978,7 +1979,7 @@ class MetaBlock(MetaSession):
     def ephys_get_probe_data(self, probe_name, verbose=True):
         '''
         '''
-        flname = self.cortexlab_mk_filename(
+        flname = self.mk_filename_for_localdb(
             '%s_spikes.hdf' % probe_name, subfolder='aligned2pxi')
         assert flname.exists()
 
@@ -1990,15 +1991,15 @@ class MetaBlock(MetaSession):
         return times, clusters
 
     def timeline_get_aligned_times(self, key='times'):
-        timeline_flname = self.cortexlab_mk_filename('timeline_aligned2pxi.hdf',
-                                                     subfolder='aligned2pxi')
+        timeline_flname = self.mk_filename_for_localdb('timeline_aligned2pxi.hdf',
+                                                       subfolder='aligned2pxi')
         timeline_newtimes = readers.hdf_load(timeline_flname, key)
         return timeline_newtimes
 
     def fusi_get_ttl_times(self):
         '''
         '''
-        self.cortexlab_timeline_load_block()
+        self.localdb_timeline_load_block()
         fusi_ttl_signal = self.timeline.get_timeline_data('neuralFrames')[1]
         fusi_ttl_signal = sync.remove_single_datapoint_onsets(fusi_ttl_signal)
         # load new timeline times (aligned to PXI NI DAQ)
@@ -2036,7 +2037,7 @@ class MetaBlock(MetaSession):
         # get time stamps
         ##############################
         # load the neural frames TTL signal from timeline
-        self.cortexlab_timeline_load_block()
+        self.localdb_timeline_load_block()
         fusi_ttl_signal = self.timeline.get_timeline_data('neuralFrames')[1]
         fusi_ttl_signal = sync.remove_single_datapoint_onsets(fusi_ttl_signal)
         # load new timeline times (aligned to PXI NI DAQ)
@@ -2103,7 +2104,8 @@ class MetaBlock(MetaSession):
         if not fusi_preproc_fl.exists():
             raise IOError('Does not exist: %s' % fusi_preproc_fl)
         if verbose:
-            print(f'Loading fUSI data: {pathlib.Path(fusi_preproc_fl).name}...')
+            print(
+                f'Loading fUSI data: {pathlib.Path(fusi_preproc_fl).name}...')
         if np.isscalar(freq_cutoffhz):
             fusi_data = readers.hdf_load(fusi_preproc_fl, 'data')
         else:
@@ -2141,7 +2143,7 @@ class MetaBlock(MetaSession):
         # get time stamps
         ##############################
         # load the neural frames TTL signal from timeline
-        self.cortexlab_timeline_load_block()
+        self.localdb_timeline_load_block()
         fusi_ttl_signal = self.timeline.get_timeline_data('neuralFrames')[1]
         fusi_ttl_signal = sync.remove_single_datapoint_onsets(fusi_ttl_signal)
         # load new timeline times (aligned to PXI NI DAQ)
@@ -2205,7 +2207,7 @@ class MetaBlock(MetaSession):
         '''
         '''
 
-        flname = self.cortexlab_mk_filename(
+        flname = self.mk_filename_for_localdb(
             '%s_lfp_bands_v01.hdf' % probe_name, 'lfp')
         assert flname.exists()
 
