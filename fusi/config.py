@@ -13,8 +13,13 @@ def set_dataset_path(path: Optional[Union[Path, str]] = None) -> None:
     Parameters
     ----------
     path : Optional[Union[Path, str]]
-        Direcotry path
+        Directory path
         Defaults to None, which uses current working directory
+
+    Notes
+    -----
+    This modifies `config.DATA_ROOT` which is used by the package
+    as the default location of the data.
     """
     global DATA_ROOT
 
