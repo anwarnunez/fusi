@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import fusi.config
 # Enter the path to the downloaded "Subjects" directory
 data_location = '/path/to/extracted/data/Subjects'
+data_location = '/store/fast/fusi_dataset_export/Subjects/'
 fusi.config.set_dataset_path(data_location)
 
 from fusi import handler2 as handler
