@@ -1,0 +1,12 @@
+git+https://github.com/gallantlab/pymoten@0.0.4
+git+https://github.com/gallantlab/tikreg@0.0.2
+numpy
+scipy
+nibabel
+pyqt5
+matplotlib
+pandas
+h5py
+tables==3.6.1
+markupsafe==1.1.1
+allensdk

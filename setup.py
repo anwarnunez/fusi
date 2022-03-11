@@ -37,20 +37,21 @@ if not 'extra_setuptools_args' in globals():
     extra_setuptools_args = dict()
 
 
-
 long_description = """
 """
 
 def main(**kwargs):
-    setup(name='fusi',
-          version='0.0.0',
+    setup(name='fusilib',
+          version='0.0.1',
           description="""""",
           author='Anwar O. Nunez-Elizalde',
           author_email='anwarnunez@gmail.com',
           url='https://anwarnunez.github.io/fusi/',
-          packages=['fusi'],
+          packages=['fusilib',
+                    'fusilib.io',
+                    'fusilib.extras'],
           package_data={
-              'fusi' :[
+              'fusilib' :[
                   'defaults.cfg',
               ],
           },
