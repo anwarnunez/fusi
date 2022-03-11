@@ -447,25 +447,5 @@ class SessionHandler(EphysFolder):
         return name
 
 
-
-# def extract_waveforms(cluster_id):
-    # from phylib.io.model import load_model
-    # # from phylib.utils.color import selected_cluster_color
-    # # First, we load the TemplateModel.
-    # model = load_model(sys.argv[1])  # first argument: path to params.py
-    # # We obtain the cluster id from the command-line arguments.
-    # cluster_id = int(sys.argv[2])  # second argument: cluster index
-
-#     # We get the waveforms of the cluster.
-#     waveforms = model.get_cluster_spike_waveforms(cluster_id)
-#     n_spikes, n_samples, n_channels_loc = waveforms.shape
-#
-#     # We get the channel ids where the waveforms are located.
-#     channel_ids = model.get_cluster_channels(cluster_id)
-
-
 if __name__ == '__main__':
-    from fusi.config import DATA_ROOT
-    path = f'{DATA_ROOT}/CR017/2019-11-13/ephys/2019-11-13_CR017_g0/2019-11-13_CR017_g0_imec0'
-    phandler = PhyHandler(path)
-    # times = phandler.spike_times.data.astype(np.float64)/phandler.params.sample_rate
+    pass

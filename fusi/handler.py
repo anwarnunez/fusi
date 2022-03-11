@@ -22,12 +22,6 @@ from tikreg import models, utils as tikutils
 from fusi.extras import stats
 from fusi.extras import readers
 
-DATES = [20190730, 20190801]
-HOURS = [1944, 1804]
-
-DATASETS = {'CR015': [(20190730, 1944),
-                      (20190801, 1804)]}
-
 
 def date2cortexlab(date_tuple):
     dateob = datetime.datetime.strptime(str(date_tuple),

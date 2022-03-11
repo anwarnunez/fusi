@@ -488,25 +488,7 @@ def bin_spikes(new_onsets, window,
                                                    new_onsets,
                                                    window,
                                                    nclusters=nclusters)
-    ##########################
-    # This is ~10x slower:
-    ##########################
-    #
-    # from fusi.mp import map as parallelmap
-    # from scipy import sparse
-    #
-    # if nclusters is None:
-    #     # use highest cluster index
-    #     nclusters = spike_clusters.max() + 1
-    #
-    # shape = (len(spike_times), nclusters)
-    # sparse_spike_matrix = sparse.csr_matrix((np.ones_like(spike_times),
-    #                                          (np.arange(len(spike_times)), spike_clusters)),
-    #                                         shape, dtype=np.bool)
-    # spike_bins = fast_find_between(spike_times, new_onsets, window=window)
-    #
-    # func = lambda x: np.asarray(sparse_spike_matrix[x].sum(0)) # spike counter function
-    # spike_matrix = np.asarray(parallelmap(func, spike_bins, procs=10)).squeeze()
+
     return spike_matrix
 
 
@@ -735,15 +717,6 @@ def bootstrap_ridge_fit(xtrain, ytrain, bootsamples,
                      weights=True,
                      ridges=[ridgeopt],
                      metric='rsquared')
-
-        #                      ridges=np.logspace(0,4,10),
-        # fit = models.cvridge(xtrain[samplesidx], ytrain[samplesidx],
-        #                      ridges=np.logspace(0,4,10),
-        #                      weights=True,
-        #                      metric='rsquared',
-        #                      blocklen=40,
-        #                      verbose=True if bdx % 1000 == 0 else False,
-        #                      )
 
         bhat = fit['weights']
         boot_weights[bdx] = bhat
