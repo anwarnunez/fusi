@@ -1,9 +1,8 @@
-from . import (cxlabexp,
-               dlc,
+from . import (dlc,
                events,
                lfp,
                logs,
                phy,
-               putative,
+               putative, righw,
                spikes,
                sync)

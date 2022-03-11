@@ -12,7 +12,7 @@ from collections import OrderedDict
 import numpy as np
 
 from fusi import misc, utils as futils
-from fusi.io import spikeglx, phy, logs, sync, cxlabexp
+from fusi.io import righw, spikeglx, phy, logs, sync
 from fusi.extras import readers
 import fusi.config
 
@@ -1764,7 +1764,7 @@ class MetaBlock(MetaSession):
     def cortexlab_timeline_load_block(self):
         '''
         '''
-        timeline = cxlabexp.ExperimentData(self.subject_name,
+        timeline = righw.ExperimentData(self.subject_name,
                                            expnum=int(self.block_name),
                                            date=self.date_tuple,
                                            root=self.root.parent)

@@ -5,7 +5,7 @@ from importlib import reload
 import numpy as np
 from matplotlib import pyplot as plt
 
-from fusi.io import spikeglx, phy, cxlabexp
+from fusi.io import righw, spikeglx, phy
 
 def mk_block_times_contiguous(block_times, verbose=True):
     '''Concatenate a list of block times so that they are contiguous
