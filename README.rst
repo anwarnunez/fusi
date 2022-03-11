@@ -7,7 +7,7 @@ Welcome to fusilib!
 
 What is fusilib?
 =================
-``fusilib`` is a Python package for analysis of functional ultrasound and electrophysiology data.
+``fusilib`` is a Python package for the analysis of functional ultrasound and electrophysiology data.
 
 Installation
 ============
@@ -18,7 +18,7 @@ The following package must be installed on your system:
 * pip
 * python3-venv
 
-To install the `fusilib` package in a virtual environment, execute the following from the command line:
+To install the ``fusilib`` package in a virtual environment, execute the following from the command line:
 
 .. code-block:: bash
 
