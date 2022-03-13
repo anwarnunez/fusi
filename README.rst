@@ -68,7 +68,7 @@ Then, execute the demo script from the command line:
 
 Cite as
 =======
-Neural correlates of blood flow measured by ultrasound. Nunez-Elizalde AO, Krumin M, Reddy CB, Montaldo G, Urban A, Harris KD, and Carandini M. Neuron (2022).
+Neural correlates of blood flow measured by ultrasound. Nunez-Elizalde AO, Krumin M, Reddy CB, Montaldo G, Urban A, Harris KD, and Carandini M. Neuron (2022). https://doi.org/10.1016/j.neuron.2022.02.012.
 
    
 .. |Zenodo| image:: https://zenodo.org/badge/456774708.svg
